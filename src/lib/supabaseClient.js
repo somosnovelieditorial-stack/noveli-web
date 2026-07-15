@@ -15,4 +15,8 @@ if (supabaseUrl && supabaseAnonKey && supabaseUrl !== 'undefined' && supabaseAno
   console.warn('Supabase credentials missing. App will run in fallback content mode.')
 }
 
+if (import.meta.env.DEV) {
+  console.log('Supabase conectado:', !!supabase)
+}
+
 export { supabase }

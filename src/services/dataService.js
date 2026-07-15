@@ -229,43 +229,50 @@ export async function fetchWebsiteData() {
     // 3c. Fetch books (only active/visible, ordered featured first, then display_order, then created_at)
     const { data: booksData, error } = await supabase
       .from('website_books')
-      .select('*')
-      .eq('active', true)
-      .eq('visible', true)
+      .select('id, title, author, cover_url, visible, active, book_origin, purchase_type, author_purchase_url, noveli_purchase_url, is_featured, is_new, is_coming_soon, display_order, created_at')
       .order('is_featured', { ascending: false })
       .order('display_order', { ascending: true })
       .order('created_at', { ascending: false })
 
     if (error) throw error
 
-    if (booksData && booksData.length > 0) {
-      data.books = booksData.map(row => {
-        const linkedCatIds = categoryLinks
-          .filter(link => link.book_id === row.id)
-          .map(link => link.category_id)
-        
-        const bookCats = categories.filter(cat => linkedCatIds.includes(cat.id))
+    // Map activeBooks to empty array first, to clear fallback if Supabase responded successfully
+    const activeBooks = (booksData || []).filter(row => row.visible !== false && row.active !== false)
 
-        return {
-          id: row.id,
-          title: row.title || row.titulo || row.nombre || 'Libro sin título',
-          author: row.author || row.autor || 'Autor desconocido',
-          cover_url: row.cover_url || row.portada_url || row.portada || '',
-          status: row.status || row.estado || 'Disponible',
-          sale_url: row.sale_url || row.url_compra || row.link_compra || '',
-          book_origin: row.book_origin || 'published_by_noveli',
-          is_featured: !!row.is_featured,
-          is_new: !!row.is_new,
-          is_coming_soon: !!row.is_coming_soon,
-          noveli_purchase_url: row.noveli_purchase_url || '',
-          author_purchase_url: row.author_purchase_url || '',
-          categories: bookCats
-        }
-      })
-    }
+    data.books = activeBooks.map(row => {
+      const linkedCatIds = categoryLinks
+        .filter(link => link.book_id === row.id)
+        .map(link => link.category_id)
+      
+      const bookCats = categories.filter(cat => linkedCatIds.includes(cat.id))
+
+      return {
+        id: row.id,
+        title: row.title || row.titulo || row.nombre || 'Libro sin título',
+        author: row.author || row.autor || 'Autor desconocido',
+        description: row.description || null, // Tolerates null/missing column
+        cover_url: row.cover_url || '',
+        cover_image_url: row.cover_image_url || null, // Tolerates null/missing column
+        image_url: row.image_url || null, // Tolerates null/missing column
+        visible: row.visible,
+        active: row.active,
+        book_origin: row.book_origin || 'published_by_noveli',
+        purchase_type: row.purchase_type || '',
+        author_purchase_url: row.author_purchase_url || '',
+        noveli_purchase_url: row.noveli_purchase_url || '',
+        is_featured: !!row.is_featured,
+        is_new: !!row.is_new,
+        is_coming_soon: !!row.is_coming_soon,
+        display_order: row.display_order,
+        created_at: row.created_at,
+        categories: bookCats
+      }
+    })
 
     if (categories.length > 0) {
       data.bookCategories = categories
+    } else {
+      data.bookCategories = []
     }
   } catch (err) {
     console.warn("Failed to fetch website_books, using fallback:", err.message || err)
@@ -325,4 +332,9 @@ export async function fetchWebsiteData() {
   }
 
   return data
+}
+
+export function getBookCover(book) {
+  if (!book) return null
+  return book.cover_url || book.cover_image_url || book.image_url || null
 }

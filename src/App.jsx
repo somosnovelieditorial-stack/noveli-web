@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { fetchWebsiteData, fallbackData } from './services/dataService'
+import { fetchWebsiteData, fallbackData, getBookCover } from './services/dataService'
 import { supabase } from './lib/supabaseClient'
 import './App.css'
 
@@ -303,21 +303,27 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const result = await fetchWebsiteData();
-        if (result) {
-          setData(result);
-        }
-      } catch (err) {
-        console.error("Critical error loading data:", err);
-      } finally {
-        setLoading(false);
+  const loadData = async (showSpinner = false) => {
+    if (showSpinner) setLoading(true);
+    try {
+      const result = await fetchWebsiteData();
+      if (result) {
+        setData(result);
       }
+    } catch (err) {
+      console.error("Critical error loading data:", err);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     loadData();
   }, []);
+
+  const handleReload = () => {
+    loadData(true);
+  };
 
   if (loading) {
     return (
@@ -482,7 +488,7 @@ function App() {
                     <BookCover 
                       title={book.title} 
                       author={book.author} 
-                      coverUrl={book.cover_url} 
+                      coverUrl={getBookCover(book)} 
                       index={index} 
                     />
                   </div>
@@ -583,87 +589,102 @@ function App() {
                 {opt.label}
               </button>
             ))}
+            {import.meta.env.DEV && (
+              <button 
+                className="filter-btn reload-btn" 
+                onClick={handleReload}
+                style={{ borderColor: 'var(--accent-gold)', color: 'var(--accent-gold)', fontWeight: 'bold' }}
+              >
+                🔄 Recargar catálogo
+              </button>
+            )}
           </div>
           
           <div className="books-grid">
-            {filteredBooks && filteredBooks.map((book, index) => {
-              const genreText = book.categories && book.categories.length > 0 
-                ? book.categories.filter(c => c.type === 'genre').map(c => c.name).join(', ') 
-                : 'Literatura';
+            {(!books || books.length === 0) ? (
+              <p className="empty-catalog-message" style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '40px 0', fontStyle: 'italic', color: 'var(--text-muted)', width: '100%', fontFamily: 'var(--font-serif-body)' }}>
+                Aún no hay libros publicados en el catálogo.
+              </p>
+            ) : (
+              filteredBooks && filteredBooks.map((book, index) => {
+                const genreText = book.categories && book.categories.length > 0 
+                  ? book.categories.filter(c => c.type === 'genre').map(c => c.name).join(', ') 
+                  : 'Literatura';
 
-              const originText = book.book_origin === 'published_by_noveli' 
-                ? 'Publicado por Noveli' 
-                : 'Compra con el autor';
+                const originText = book.book_origin === 'published_by_noveli' 
+                  ? 'Publicado por Noveli' 
+                  : 'Compra con el autor';
 
-              let highlightText = '';
-              if (book.is_featured) highlightText = 'Destacado';
-              else if (book.is_new || book.status?.toLowerCase() === 'novedad') highlightText = 'Novedad';
-              else if (book.is_coming_soon || book.status?.toLowerCase() === 'próximamente' || book.status?.toLowerCase() === 'proximamente') highlightText = 'Próximamente';
+                let highlightText = '';
+                if (book.is_featured) highlightText = 'Destacado';
+                else if (book.is_new || book.status?.toLowerCase() === 'novedad') highlightText = 'Novedad';
+                else if (book.is_coming_soon || book.status?.toLowerCase() === 'próximamente' || book.status?.toLowerCase() === 'proximamente') highlightText = 'Próximamente';
 
-              let buyButton = null;
-              if (book.noveli_purchase_url) {
-                buyButton = (
-                  <a 
-                    href={book.noveli_purchase_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="btn btn-primary book-btn"
-                    id={`btn-buy-noveli-${book.id}`}
-                  >
-                    Comprar en Noveli
-                  </a>
+                let buyButton = null;
+                if (book.noveli_purchase_url) {
+                  buyButton = (
+                    <a 
+                      href={book.noveli_purchase_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="btn btn-primary book-btn"
+                      id={`btn-buy-noveli-${book.id}`}
+                    >
+                      Comprar en Noveli
+                    </a>
+                  );
+                } else if (book.author_purchase_url) {
+                  buyButton = (
+                    <a 
+                      href={book.author_purchase_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="btn btn-secondary book-btn"
+                      id={`btn-buy-author-${book.id}`}
+                    >
+                      Comprar con el autor
+                    </a>
+                  );
+                } else {
+                  buyButton = (
+                    <a 
+                      href="#contacto" 
+                      className="btn btn-secondary book-btn"
+                      id={`btn-details-${book.id}`}
+                    >
+                      Ver detalles
+                    </a>
+                  );
+                }
+
+                return (
+                  <article key={book.id} className="book-card">
+                    <div style={{ position: 'relative' }}>
+                      {/* Origin Badge */}
+                      <span className="book-origin-badge">{originText}</span>
+                      
+                      {/* Highlight Badge */}
+                      {highlightText && (
+                        <span className="book-status-badge">{highlightText}</span>
+                      )}
+
+                      <BookCover 
+                        title={book.title} 
+                        author={book.author} 
+                        coverUrl={getBookCover(book)} 
+                        index={index} 
+                      />
+                    </div>
+                    <span className="book-card-category">{genreText}</span>
+                    <h3 className="book-title">{book.title}</h3>
+                    <p className="book-author">por {book.author}</p>
+                    <div className="book-action">
+                      {buyButton}
+                    </div>
+                  </article>
                 );
-              } else if (book.author_purchase_url) {
-                buyButton = (
-                  <a 
-                    href={book.author_purchase_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="btn btn-secondary book-btn"
-                    id={`btn-buy-author-${book.id}`}
-                  >
-                    Comprar con el autor
-                  </a>
-                );
-              } else {
-                buyButton = (
-                  <a 
-                    href="#contacto" 
-                    className="btn btn-secondary book-btn"
-                    id={`btn-details-${book.id}`}
-                  >
-                    Ver detalles
-                  </a>
-                );
-              }
-
-              return (
-                <article key={book.id} className="book-card">
-                  <div style={{ position: 'relative' }}>
-                    {/* Origin Badge */}
-                    <span className="book-origin-badge">{originText}</span>
-                    
-                    {/* Highlight Badge */}
-                    {highlightText && (
-                      <span className="book-status-badge">{highlightText}</span>
-                    )}
-
-                    <BookCover 
-                      title={book.title} 
-                      author={book.author} 
-                      coverUrl={book.cover_url} 
-                      index={index} 
-                    />
-                  </div>
-                  <span className="book-card-category">{genreText}</span>
-                  <h3 className="book-title">{book.title}</h3>
-                  <p className="book-author">por {book.author}</p>
-                  <div className="book-action">
-                    {buyButton}
-                  </div>
-                </article>
-              );
-            })}
+              })
+            )}
           </div>
         </div>
       </section>
@@ -679,7 +700,7 @@ function App() {
                     <BookCover 
                       title={book.title} 
                       author={book.author} 
-                      coverUrl={book.cover_url} 
+                      coverUrl={getBookCover(book)} 
                       index={idx + 4} 
                     />
                   </div>
