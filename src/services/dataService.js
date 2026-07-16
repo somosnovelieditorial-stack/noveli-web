@@ -303,7 +303,7 @@ export async function fetchWebsiteData() {
 
     const { data: servicesData, error } = await supabase
       .from('website_services')
-      .select('id, organization_id, title, short_description, full_description, price_from, currency, category, featured, visible_on_website, active, display_order, image_url, background_url, icon_name, color_theme, created_at')
+      .select('id, organization_id, title, short_description, full_description, price_from, currency, category, featured, visible_on_website, active, display_order, image_url, background_url, icon_name, color_theme, created_at, includes, not_included, process_steps, estimated_time, requires_manuscript_info, quote_note')
       .order('display_order', { ascending: true })
       .order('created_at', { ascending: true })
 
