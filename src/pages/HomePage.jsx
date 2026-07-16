@@ -179,8 +179,17 @@ export default function HomePage({ data, handleReload }) {
     return book.categories && book.categories.some(cat => cat.id === activeFilter || cat.slug === activeFilter);
   }) : [];
 
-  // Limit to maximum 6 books for Home Page summary
-  const homeBooks = filteredBooks.slice(0, 6);
+  // Get active and visible books first
+  const activeBooks = books ? books.filter(book => book.active !== false && book.visible !== false) : [];
+
+  // Filter for featured ones, or fallback to first 3 active books
+  let homeBooks = activeBooks.filter(book => book.is_featured || (book.categories && book.categories.some(cat => cat.slug === 'destacados' || cat.slug === 'destacado')));
+  
+  if (homeBooks.length === 0) {
+    homeBooks = activeBooks.slice(0, 3);
+  } else {
+    homeBooks = homeBooks.slice(0, 3);
+  }
 
   if (import.meta.env.DEV) {
     console.log('Libros reales desde Supabase:', books);
@@ -445,66 +454,91 @@ export default function HomePage({ data, handleReload }) {
       </section>
 
       {/* 4. Libros Section */}
-      <section id="libros" className="section">
+      <section id="libros" className="section home-catalog-section">
         <div className="container">
-          <div className="section-title-wrapper">
+          <div className="section-title-wrapper" style={{ marginBottom: '20px' }}>
             <span className="section-subtitle">— CATÁLOGO —</span>
             <h2 className="section-title">Historias que inspiran</h2>
           </div>
           
-          {/* Dynamic grouped filter dropdown */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginBottom: '28px' }}>
-            <BookFilterDropdown 
-              activeFilter={activeFilter} 
-              onChange={setActiveFilter} 
-              bookCategories={bookCategories} 
-            />
-            {import.meta.env.DEV && (
-              <button 
-                className="filter-btn reload-btn" 
-                onClick={handleReload}
-                style={{ 
-                  height: '42px', 
-                  border: '1px solid var(--accent-gold)', 
-                  borderRadius: '4px', 
-                  color: 'var(--accent-gold)', 
-                  background: 'none', 
-                  padding: '0 16px', 
-                  fontWeight: 'bold', 
-                  cursor: 'pointer', 
-                  zIndex: 100, 
-                  fontSize: '0.8rem', 
-                  letterSpacing: '0.05em' 
-                }}
-              >
-                🔄 RECARGAR
-              </button>
-            )}
-          </div>
-          
-          {/* Slider with wine side arrows */}
-          <div className="catalog-carousel-container">
-            <button 
-              className="carousel-arrow arrow-left" 
-              onClick={scrollCatalogLeft} 
-              aria-label="Desplazar a la izquierda"
-            >
-              ‹
-            </button>
+          <div className="catalog-compact-wrapper">
+            {(!books || books.length === 0) ? (
+              <p className="empty-catalog-message" style={{ textAlign: 'center', padding: '40px 0', fontStyle: 'italic', color: 'var(--text-muted)', fontFamily: 'var(--font-serif-body)' }}>
+                Aún no hay libros publicados en el catálogo.
+              </p>
+            ) : homeBooks.length === 1 ? (
+              (() => {
+                const book = homeBooks[0];
+                const originText = book.book_origin === 'published_by_noveli' 
+                  ? 'Publicado por Noveli' 
+                  : 'Compra con el autor';
+                let highlightText = '';
+                if (book.is_featured) highlightText = 'DESTACADO';
+                else if (book.is_new || book.status?.toUpperCase() === 'NOVEDAD' || book.status?.toUpperCase() === 'DESTACADO') highlightText = book.status?.toUpperCase() || 'NOVEDAD';
+                else if (book.is_coming_soon || book.status?.toLowerCase() === 'próximamente' || book.status?.toLowerCase() === 'proximamente') highlightText = 'PRÓXIMAMENTE';
 
-            <div 
-              className="books-grid" 
-              ref={booksGridRef}
-              style={{
-                justifyContent: (homeBooks && homeBooks.length === 1) ? 'center' : 'flex-start'
-              }}
-            >
-              {(!books || books.length === 0) ? (
-                <p className="empty-catalog-message" style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '40px 0', fontStyle: 'italic', color: 'var(--text-muted)', width: '100%', fontFamily: 'var(--font-serif-body)' }}>
-                  Aún no hay libros publicados en el catálogo.
-                </p>
-              ) : (
-                homeBooks && homeBooks.map((book, index) => {
+                const action = getBookAction(book);
+                let actionButton = null;
+                if (action.action === 'link') {
+                  actionButton = (
+                    <a 
+                      href={action.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className={`btn book-btn ${book.book_origin === 'published_by_noveli' ? 'btn-primary' : 'btn-dark'}`}
+                      style={{ padding: '8px 16px', fontSize: '0.72rem', width: 'auto', display: 'inline-flex' }}
+                    >
+                      {action.label}
+                    </a>
+                  );
+                } else {
+                  actionButton = (
+                    <button 
+                      onClick={() => setSelectedBook(book)}
+                      className="btn btn-secondary book-btn"
+                      style={{ padding: '8px 16px', fontSize: '0.72rem', width: 'auto', display: 'inline-flex' }}
+                      disabled={action.disabled}
+                    >
+                      {action.label}
+                    </button>
+                  );
+                }
+
+                return (
+                  <div className="single-book-card-compact">
+                    <div 
+                      onClick={() => setSelectedBook(book)}
+                      style={{ cursor: 'pointer', flexShrink: 0 }}
+                      className="single-book-cover-wrapper"
+                    >
+                      <BookCover 
+                        title={book.title} 
+                        author={book.author} 
+                        coverUrl={getBookCover(book)} 
+                        index={0} 
+                      />
+                    </div>
+                    <div className="single-book-info-col">
+                      <span className="book-origin-badge">
+                        {originText.toUpperCase()}
+                      </span>
+                      {highlightText && (
+                        <span className={`book-status-badge badge-${highlightText.toLowerCase().replace(/á/g, 'a').replace(/ó/g, 'o')}`}>
+                          {highlightText}
+                        </span>
+                      )}
+                      <h3 className="book-title">{book.title}</h3>
+                      <p className="book-author">{book.author}</p>
+                      <div className="single-book-action-row">
+                        {actionButton}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="home-books-compact-grid">
+                {homeBooks.map((book, index) => {
                   const originText = book.book_origin === 'published_by_noveli' 
                     ? 'Publicado por Noveli' 
                     : 'Compra con el autor';
@@ -543,18 +577,19 @@ export default function HomePage({ data, handleReload }) {
                   }
 
                   return (
-                    <article key={book.id} className="book-card" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <article key={book.id} className="book-card-compact-home">
                       <div 
                         onClick={() => setSelectedBook(book)}
                         style={{ position: 'relative', cursor: 'pointer' }}
                         title="Click para ver sinopsis/resumen"
+                        className="compact-cover-wrapper"
                       >
-                        {/* Origin Badge */}
-                        <span className="book-origin-badge" style={{ bottom: '18px' }}>{originText}</span>
+                        <span className="book-origin-badge" style={{ bottom: '12px', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', fontSize: '0.52rem', padding: '2px 6px' }}>
+                          {originText.toUpperCase()}
+                        </span>
                         
-                        {/* Highlight Badge */}
                         {highlightText && (
-                          <span className={`book-status-badge badge-${highlightText.toLowerCase().replace(/á/g, 'a').replace(/ó/g, 'o')}`}>{highlightText}</span>
+                          <span className={`book-status-badge badge-${highlightText.toLowerCase().replace(/á/g, 'a').replace(/ó/g, 'o')}`} style={{ top: '8px', right: '8px', fontSize: '0.52rem', padding: '2px 6px' }}>{highlightText}</span>
                         )}
 
                         <BookCover 
@@ -564,29 +599,21 @@ export default function HomePage({ data, handleReload }) {
                           index={index} 
                         />
                       </div>
-                      <h3 className="book-title" style={{ marginTop: '12px' }}>{book.title}</h3>
-                      <p className="book-author" style={{ marginBottom: '12px' }}>{book.author}</p>
+                      <h3 className="book-title">{book.title}</h3>
+                      <p className="book-author">{book.author}</p>
 
                       <div style={{ width: '100%', marginTop: 'auto' }}>
                         {actionButton}
                       </div>
                     </article>
                   );
-                })
-              )}
-            </div>
-
-            <button 
-              className="carousel-arrow arrow-right" 
-              onClick={scrollCatalogRight} 
-              aria-label="Desplazar a la derecha"
-            >
-              ›
-            </button>
+                })}
+              </div>
+            )}
           </div>
 
-          <div style={{ marginTop: '28px', textAlign: 'center' }}>
-            <Link to="/libros" className="services-more-link" id="btn-all-books">
+          <div style={{ marginTop: '24px', textAlign: 'center' }}>
+            <Link to="/libros" className="services-more-link" id="btn-all-books" style={{ fontSize: '0.75rem', letterSpacing: '0.1em' }}>
               VER TODOS LOS LIBROS ➔
             </Link>
           </div>
