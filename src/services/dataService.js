@@ -171,7 +171,17 @@ export const fallbackData = {
     email: "hola@somosnoveli.cl",
     instagram: "https://instagram.com/somosnoveli",
     contact: "mailto:hola@somosnoveli.cl"
-  }
+  },
+  footerSettings: {
+    contact_title: "Contáctanos",
+    contact_email: "hola@somosnoveli.cl",
+    contact_location: "Santiago, Chile",
+    contact_description: "Acompañamos tu proceso de escritura y autopublicación de principio a fin.",
+    instagram_title: "Síguenos en Instagram",
+    instagram_url: "https://instagram.com/somosnoveli",
+    instagram_enabled: true
+  },
+  footerGallery: []
 }
 
 export async function fetchWebsiteData() {
@@ -435,6 +445,59 @@ export async function fetchWebsiteData() {
     }
   } catch (err) {
     console.warn("Failed to fetch website_links, using fallback:", err.message || err)
+  }
+
+  // 6. Fetch footer settings
+  try {
+    const { data: footerData, error } = await supabase
+      .from('website_footer_settings')
+      .select('contact_title, contact_email, contact_location, contact_description, instagram_title, instagram_url, instagram_enabled, active')
+      .eq('active', true)
+      .limit(1)
+
+    if (error) throw error
+
+    if (footerData && footerData.length > 0) {
+      const row = footerData[0]
+      data.footerSettings = {
+        contact_title: row.contact_title || fallbackData.footerSettings.contact_title,
+        contact_email: row.contact_email || fallbackData.footerSettings.contact_email,
+        contact_location: row.contact_location || fallbackData.footerSettings.contact_location,
+        contact_description: row.contact_description || fallbackData.footerSettings.contact_description,
+        instagram_title: row.instagram_title || fallbackData.footerSettings.instagram_title,
+        instagram_url: row.instagram_url || fallbackData.footerSettings.instagram_url,
+        instagram_enabled: row.instagram_enabled !== false
+      }
+      
+      // Keep main links aligned with footer links if present
+      if (row.contact_email) data.links.email = row.contact_email.replace('mailto:', '')
+      if (row.instagram_url) data.links.instagram = row.instagram_url
+    }
+  } catch (err) {
+    console.warn("Failed to fetch website_footer_settings, using fallback:", err.message || err)
+  }
+
+  // 7. Fetch footer gallery
+  try {
+    const { data: galleryData, error } = await supabase
+      .from('website_footer_gallery')
+      .select('image_url, title, link_url, display_order, active')
+      .eq('active', true)
+      .order('display_order', { ascending: true })
+
+    if (error) throw error
+
+    if (galleryData && galleryData.length > 0) {
+      data.footerGallery = galleryData.map(row => ({
+        image_url: row.image_url || '',
+        title: row.title || '',
+        link_url: row.link_url || '',
+        display_order: row.display_order,
+        active: row.active !== false
+      }))
+    }
+  } catch (err) {
+    console.warn("Failed to fetch website_footer_gallery, using fallback:", err.message || err)
   }
 
   return data

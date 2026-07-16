@@ -81,7 +81,17 @@ function AppContent() {
     );
   }
 
-  const { services, books, sections, links } = data;
+  const { services, books, sections, links, footerSettings, footerGallery } = data;
+
+  const fs = footerSettings || {
+    contact_title: "Contáctanos",
+    contact_email: "hola@somosnoveli.cl",
+    contact_location: "Santiago, Chile",
+    contact_description: "Acompañamos tu proceso de escritura y autopublicación de principio a fin.",
+    instagram_title: "Síguenos en Instagram",
+    instagram_url: "https://instagram.com/somosnoveli",
+    instagram_enabled: true
+  };
 
   // Render header dynamically based on route (or always cream background #F6EFE3 to ensure legibility)
   const isHome = location.pathname === '/';
@@ -156,15 +166,19 @@ function AppContent() {
                 </svg>
               </div>
               <p style={{ maxWidth: '280px', lineHeight: '1.6', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)' }}>
-                Acompañamos a autores a convertir sus manuscritos en libros que perduran.
+                {fs.contact_description}
               </p>
               <div className="footer-socials-inline" style={{ marginTop: '16px', display: 'flex', gap: '12px' }}>
-                <a href={links.instagram} target="_blank" rel="noopener noreferrer" className="social-link-icon">
-                  <InstagramIcon />
-                </a>
-                <a href={`mailto:${links.email}`} className="social-link-icon">
-                  <EnvelopeIcon />
-                </a>
+                {fs.instagram_url && (
+                  <a href={fs.instagram_url} target="_blank" rel="noopener noreferrer" className="social-link-icon">
+                    <InstagramIcon />
+                  </a>
+                )}
+                {fs.contact_email && (
+                  <a href={`mailto:${fs.contact_email}`} className="social-link-icon">
+                    <EnvelopeIcon />
+                  </a>
+                )}
               </div>
             </div>
             
@@ -189,36 +203,69 @@ function AppContent() {
             </div>
 
             <div className="footer-col">
-              <h4>CONTACTO</h4>
+              <h4>{fs.contact_title.toUpperCase()}</h4>
               <ul className="footer-links">
-                <li><a href={`mailto:${links.email}`} style={{ textTransform: 'lowercase' }}>{links.email}</a></li>
-                <li><span>Chile</span></li>
+                {fs.contact_email && (
+                  <li><a href={`mailto:${fs.contact_email}`} style={{ textTransform: 'lowercase' }}>{fs.contact_email}</a></li>
+                )}
+                {fs.contact_location && (
+                  <li><span>{fs.contact_location}</span></li>
+                )}
                 <li><span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>Atendemos autores de todo el mundo.</span></li>
               </ul>
             </div>
 
-            <div className="footer-col" style={{ minWidth: '180px' }}>
-              <h4>SÍGUENOS EN INSTAGRAM</h4>
-              <div className="footer-instagram-grid">
-                {(books && books.length >= 6 ? books.slice(0, 6) : [
-                  { title: "Fragmentos", author: "A.M." },
-                  { title: "Besos", author: "Vale" },
-                  { title: "Cielo", author: "Daniela" },
-                  { title: "Raíz", author: "Sofía" },
-                  { title: "Cartas", author: "Javier" },
-                  { title: "Eco", author: "Luna" }
-                ]).map((book, idx) => (
-                  <div key={idx} className="instagram-grid-item">
-                    <BookCover 
-                      title={book.title} 
-                      author={book.author} 
-                      coverUrl={getBookCover(book)} 
-                      index={idx} 
-                    />
-                  </div>
-                ))}
+            {fs.instagram_enabled !== false && (
+              <div className="footer-col" style={{ minWidth: '180px' }}>
+                <h4>
+                  {fs.instagram_url ? (
+                    <a href={fs.instagram_url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+                      {fs.instagram_title.toUpperCase()}
+                    </a>
+                  ) : (
+                    fs.instagram_title.toUpperCase()
+                  )}
+                </h4>
+                
+                <div className="footer-instagram-grid">
+                  {footerGallery && footerGallery.length > 0 ? (
+                    footerGallery.slice(0, 6).map((item, idx) => {
+                      const content = (
+                        <div className="instagram-grid-item-inner" style={{ width: '56px', height: '84px', overflow: 'hidden', borderRadius: '2px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                          <img 
+                            src={item.image_url} 
+                            alt={item.title} 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          />
+                        </div>
+                      );
+                      return (
+                        <div key={idx} className="instagram-grid-item" title={item.title}>
+                          {item.link_url ? (
+                            <a href={item.link_url} target="_blank" rel="noopener noreferrer">
+                              {content}
+                            </a>
+                          ) : (
+                            content
+                          )}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    books && books.slice(0, 6).map((book, idx) => (
+                      <div key={book.id} className="instagram-grid-item">
+                        <BookCover 
+                          title={book.title} 
+                          author={book.author} 
+                          coverUrl={getBookCover(book)} 
+                          index={idx} 
+                        />
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="footer-bottom">
