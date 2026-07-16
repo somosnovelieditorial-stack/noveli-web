@@ -8,39 +8,48 @@ export const fallbackData = {
   services: [
     {
       id: 1,
-      title: "Corrección Estilística y Ortotipográfica",
+      title: "Corrección editorial",
       category: "Edición",
-      description: "Pulimos la gramática, coherencia y estilo de tu manuscrito, cuidando la ortotipografía y respetando al máximo tu voz y personalidad como autor.",
-      price_from: 149,
-      currency: "€",
+      description: "Revisión ortográfica, gramatical y de estilo para que tu manuscrito brille con claridad.",
+      price_from: 120000,
+      currency: "CLP",
       featured: true
     },
     {
       id: 2,
-      title: "Diseño de Portada Editorial",
+      title: "Maquetación profesional",
       category: "Diseño",
-      description: "Diseños de portada exclusivos e impactantes que transmiten la esencia de tu obra y atraen las miradas de los lectores en cualquier escaparate.",
-      price_from: 199,
-      currency: "€",
+      description: "Diseño interior para eBook e impreso, listo para cualquier plataforma.",
+      price_from: 150000,
+      currency: "CLP",
       featured: false
     },
     {
       id: 3,
-      title: "Maquetación Profesional (Impreso y Digital)",
-      category: "Diseño",
-      description: "Damos formato profesional al interior de tu libro cumpliendo con los estándares de imprenta y optimizando versiones digitales para Kindle y ePub.",
-      price_from: 119,
-      currency: "€",
+      title: "Diseño de portadas",
+      category: "Arte",
+      description: "Portadas únicas que representan tu historia y conectan con tus lectores.",
+      price_from: 90000,
+      currency: "CLP",
       featured: false
     },
     {
       id: 4,
-      title: "Publicación y Distribución Global",
-      category: "Publicación",
-      description: "Te guiamos para publicar tu obra en plataformas de distribución mundial como Amazon e IngramSpark, conservando el 100% de tus regalías y derechos.",
-      price_from: 299,
-      currency: "€",
+      title: "Autopublicación en Amazon",
+      category: "Distribución",
+      description: "Te guiamos paso a paso para publicar tu libro en Amazon KDP con confianza.",
+      price_from: 80000,
+      currency: "CLP",
       featured: true
+    },
+    {
+      id: 5,
+      title: "Libro físico bajo demanda",
+      category: "Impresión",
+      description: "Impresión profesional bajo demanda con la mejor calidad.",
+      price_from: 90000,
+      currency: "CLP",
+      featured: false
     }
   ],
   bookCategories: [
@@ -51,14 +60,14 @@ export const fallbackData = {
   books: [
     {
       id: 1,
-      title: "El Eco de los Girasoles",
-      author: "Elena Rostova",
+      title: "Besos con sabor a sal",
+      author: "Vale Barrios",
       cover_url: "",
-      status: "Novedad",
+      status: "Destacado",
       sale_url: "https://amazon.com",
       book_origin: "published_by_noveli",
       is_featured: true,
-      is_new: true,
+      is_new: false,
       is_coming_soon: false,
       noveli_purchase_url: "https://amazon.com",
       author_purchase_url: "",
@@ -68,10 +77,61 @@ export const fallbackData = {
     },
     {
       id: 2,
-      title: "Bajo las Cenizas del Invierno",
-      author: "Carlos Mendoza",
+      title: "Bajo el cielo que callamos",
+      author: "Daniela Torres",
       cover_url: "",
-      status: "Disponible",
+      status: "Novedad",
+      sale_url: "https://amazon.com",
+      book_origin: "published_by_noveli",
+      is_featured: false,
+      is_new: true,
+      is_coming_soon: false,
+      noveli_purchase_url: "https://amazon.com",
+      author_purchase_url: "",
+      categories: [
+        { id: "cat-2", name: "Novela", slug: "novela", type: "genre" }
+      ]
+    },
+    {
+      id: 3,
+      title: "Fragmentos de lo que fuimos",
+      author: "A.M.",
+      cover_url: "",
+      status: "",
+      sale_url: "https://amazon.com",
+      book_origin: "published_by_noveli",
+      is_featured: false,
+      is_new: false,
+      is_coming_soon: false,
+      noveli_purchase_url: "https://amazon.com",
+      author_purchase_url: "",
+      categories: [
+        { id: "cat-1", name: "Poesía", slug: "poesia", type: "genre" }
+      ]
+    },
+    {
+      id: 4,
+      title: "La raíz de lo que no se ve",
+      author: "Sofía Delgado",
+      cover_url: "",
+      status: "Destacado",
+      sale_url: "https://amazon.com",
+      book_origin: "author_purchase",
+      is_featured: true,
+      is_new: false,
+      is_coming_soon: false,
+      noveli_purchase_url: "",
+      author_purchase_url: "https://amazon.com",
+      categories: [
+        { id: "cat-2", name: "Novela", slug: "novela", type: "genre" }
+      ]
+    },
+    {
+      id: 5,
+      title: "Cartas a mi mejor enemigo",
+      author: "Javier R.",
+      cover_url: "",
+      status: "",
       sale_url: "https://amazon.com",
       book_origin: "author_purchase",
       is_featured: false,
@@ -80,13 +140,13 @@ export const fallbackData = {
       noveli_purchase_url: "",
       author_purchase_url: "https://amazon.com",
       categories: [
-        { id: "cat-1", name: "Poesía", slug: "poesia", type: "genre" }
+        { id: "cat-2", name: "Novela", slug: "novela", type: "genre" }
       ]
     },
     {
-      id: 3,
-      title: "Crónicas del Mañana",
-      author: "Sofía Varela",
+      id: 6,
+      title: "El eco de las sombras",
+      author: "Luna Véliz",
       cover_url: "",
       status: "Próximamente",
       sale_url: "",
@@ -104,13 +164,13 @@ export const fallbackData = {
   sections: {
     nosotros: {
       title: "Sobre Noveli Editorial",
-      content: "Somos Noveli Editorial, un espacio dedicado a dar vida a las palabras y hacer realidad el sueño de ver tu libro publicado. Creemos firmemente que cada manuscrito es un tesoro único que merece ser cuidado con dedicación artesanal y profesionalismo. Nuestro equipo de editores, diseñadores y correctores trabaja codo con codo con cada autor, transformando ideas en obras de arte memorables y conectando historias con lectores de todo el mundo."
+      content: "Creemos que cada libro merece ser tratado con respeto, belleza y cuidado editorial. No publicamos historias, las acompañamos."
     }
   },
   links: {
-    email: "contacto@somosnoveli.com",
+    email: "hola@somosnoveli.cl",
     instagram: "https://instagram.com/somosnoveli",
-    contact: "mailto:contacto@somosnoveli.com"
+    contact: "mailto:hola@somosnoveli.cl"
   }
 }
 
@@ -175,23 +235,30 @@ export async function fetchWebsiteData() {
   try {
     const { data: servicesData, error } = await supabase
       .from('website_services')
-      .select('*')
-      .eq('active', true)
+      .select('id, title, short_description, full_description, price_from, currency, category, featured, visible_on_website, active, display_order, created_at')
       .order('display_order', { ascending: true })
+      .order('created_at', { ascending: true })
 
     if (error) throw error
 
-    if (servicesData && servicesData.length > 0) {
-      data.services = servicesData.map(row => ({
-        id: row.id,
-        title: row.title || row.titulo || row.nombre || row.name || 'Servicio sin título',
-        category: row.category || row.categoria || 'Edición',
-        description: row.description || row.descripcion || row.texto || '',
-        price_from: row.price_from !== undefined ? row.price_from : (row.precio_desde !== undefined ? row.precio_desde : 0),
-        currency: row.currency || row.moneda || '€',
-        featured: row.featured !== undefined ? row.featured : (row.destacado !== undefined ? row.destacado : false)
-      }))
-    }
+    // Map and filter active/visible on website (programmatically to tolerate nulls)
+    const activeServices = (servicesData || []).filter(row => row.active !== false && row.visible_on_website !== false)
+
+    data.services = activeServices.map(row => ({
+      id: row.id,
+      title: row.title || 'Servicio sin título',
+      category: row.category || 'Edición',
+      short_description: row.short_description || '',
+      full_description: row.full_description || '',
+      description: row.short_description || row.full_description || '', // compatible with App.jsx
+      price_from: row.price_from,
+      currency: row.currency || 'CLP',
+      featured: row.featured === true,
+      visible_on_website: row.visible_on_website !== false,
+      active: row.active !== false,
+      display_order: row.display_order,
+      created_at: row.created_at
+    }))
   } catch (err) {
     console.warn("Failed to fetch website_services, using fallback:", err.message || err)
   }
@@ -337,4 +404,15 @@ export async function fetchWebsiteData() {
 export function getBookCover(book) {
   if (!book) return null
   return book.cover_url || book.cover_image_url || book.image_url || null
+}
+
+export function formatServicePrice(price, currency) {
+  if (price === undefined || price === null || price <= 0) {
+    return "Cotización personalizada";
+  }
+  const formatted = price.toLocaleString('es-CL');
+  if (currency === 'CLP') {
+    return `DESDE $${formatted} CLP`;
+  }
+  return `DESDE $${formatted}`;
 }
