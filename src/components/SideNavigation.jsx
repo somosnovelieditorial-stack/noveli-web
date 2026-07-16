@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 
-export default function SideNavigation({ isOpen, onClose, links = {} }) {
+export default function SideNavigation({ isOpen, onClose, links = {}, settings = {} }) {
   const panelRef = useRef(null);
   const location = useLocation();
 
@@ -104,13 +104,30 @@ export default function SideNavigation({ isOpen, onClose, links = {} }) {
         </button>
 
         {/* Logo */}
-        <div className="logo-text" style={{ color: '#FFFFFF', marginBottom: '40px', fontSize: '1.4rem' }}>
-          NOVELI
-          <span className="logo-sub" style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.62rem' }}> — EDITORIAL</span>
-          <svg className="logo-leaf" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '5px', display: 'inline-block', verticalAlign: 'middle' }}>
-            <path d="M2 22C2 22 10 22 16 16C21 11 20 4 20 4C20 4 13 3 8 8C2 14 2 22 2 22Z" fill="var(--accent-gold)" />
-            <path d="M12 12L2 22" />
-          </svg>
+        <div className="logo-wrapper-sidenav" style={{ marginBottom: '40px' }}>
+          {settings?.logo_dark_url || settings?.logo_url ? (
+            <img 
+              src={settings.logo_dark_url || settings.logo_url} 
+              alt={settings.brand_name || "NOVELI"} 
+              className="brand-logo-img brand-logo-sidenav"
+              style={{
+                maxHeight: '36px',
+                width: 'auto',
+                objectFit: 'contain',
+                display: 'block',
+                filter: 'brightness(0) invert(1)' /* Light color on dark background (Rule 9) */
+              }}
+            />
+          ) : (
+            <div className="logo-text" style={{ color: '#FFFFFF', fontSize: '1.4rem', margin: 0 }}>
+              {settings?.brand_name || 'NOVELI'}
+              <span className="logo-sub" style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.62rem' }}>{settings?.brand_subtitle || ' — EDITORIAL'}</span>
+              <svg className="logo-leaf" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '5px', display: 'inline-block', verticalAlign: 'middle' }}>
+                <path d="M2 22C2 22 10 22 16 16C21 11 20 4 20 4C20 4 13 3 8 8C2 14 2 22 2 22Z" fill="var(--accent-gold)" />
+                <path d="M12 12L2 22" />
+              </svg>
+            </div>
+          )}
         </div>
 
         {/* Navigation Links */}

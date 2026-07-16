@@ -2168,3 +2168,17 @@ html, body {
     width: 82vw !important;
   }
 }
+
+/* Database Brand Logo Sizing and Object-Fit (Rule 6) */
+.brand-logo-img {
+  max-height: 36px !important;
+  width: auto !important;
+  object-fit: contain !important;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .brand-logo-img {
+    max-height: 28px !important;
+  }
+}

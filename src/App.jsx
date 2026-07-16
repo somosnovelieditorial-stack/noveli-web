@@ -91,7 +91,8 @@ function AppContent() {
     );
   }
 
-  const { services, books, sections, links, footerSettings, footerGallery } = data;
+  const { services, books, sections, links, footerSettings, footerGallery, settings } = data;
+  const siteSettings = settings || fallbackData.settings;
 
   const fs = footerSettings || {
     contact_title: "Contáctanos",
@@ -102,6 +103,19 @@ function AppContent() {
     instagram_url: "https://instagram.com/somosnoveli",
     instagram_enabled: true
   };
+
+  // Dynamically update favicon if configured
+  useEffect(() => {
+    if (siteSettings?.favicon_url) {
+      let link = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = siteSettings.favicon_url;
+    }
+  }, [siteSettings?.favicon_url]);
 
   // Render header dynamically based on route (or always cream background #F6EFE3 to ensure legibility)
   const isHome = location.pathname === '/';
@@ -146,18 +160,18 @@ function AppContent() {
 
           {/* Centro: Logo */}
           <div style={{ justifySelf: 'center' }}>
-            <Link to="/" className="logo-link" style={{ textDecoration: 'none' }}>
-              {data.settings?.logo_light_url || data.settings?.logo_url ? (
+            <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {siteSettings?.logo_dark_url || siteSettings?.logo_url ? (
                 <img 
-                  src={data.settings.logo_light_url || data.settings.logo_url} 
-                  alt={data.settings.brand_name || "NOVELI"} 
-                  className="header-logo-image" 
-                  style={{ height: '32px', objectFit: 'contain', display: 'block' }}
+                  src={siteSettings.logo_dark_url || siteSettings.logo_url} 
+                  alt={siteSettings.brand_name || "NOVELI"} 
+                  className="brand-logo-img brand-logo-dark"
+                  style={{ maxHeight: '36px', width: 'auto', objectFit: 'contain', display: 'block' }}
                 />
               ) : (
                 <div className="logo-text" style={{ color: 'var(--wine-dark)', margin: 0 }}>
-                  {data.settings?.brand_name || 'NOVELI'}
-                  <span className="logo-sub" style={{ color: 'var(--text-muted)' }}> {data.settings?.brand_subtitle || ' — EDITORIAL'}</span>
+                  {siteSettings?.brand_name || 'NOVELI'}
+                  <span className="logo-sub" style={{ color: 'var(--text-muted)' }}>{siteSettings?.brand_subtitle || ' — EDITORIAL'}</span>
                   <svg className="logo-leaf" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '5px', display: 'inline-block', verticalAlign: 'middle' }}>
                     <path d="M2 22C2 22 10 22 16 16C21 11 20 4 20 4C20 4 13 3 8 8C2 14 2 22 2 22Z" fill="var(--accent-gold)" />
                     <path d="M12 12L2 22" />
@@ -211,23 +225,25 @@ function AppContent() {
           <div className="footer-grid">
             <div className="footer-col" style={{ gridColumn: 'span 2' }}>
               <div className="footer-logo-wrapper" style={{ marginBottom: '12px' }}>
-                {data.settings?.logo_dark_url || data.settings?.logo_url ? (
-                  <img 
-                    src={data.settings.logo_dark_url || data.settings.logo_url} 
-                    alt={data.settings.brand_name || "NOVELI"} 
-                    className="footer-logo-image" 
-                    style={{ height: '32px', objectFit: 'contain', display: 'block' }}
-                  />
-                ) : (
-                  <div className="logo-text footer-logo" style={{ color: '#FFFFFF', margin: 0 }}>
-                    {data.settings?.brand_name || 'NOVELI'}
-                    <span className="logo-sub">{data.settings?.brand_subtitle || ' — EDITORIAL'}</span>
-                    <svg className="logo-leaf" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '5px', display: 'inline-block', verticalAlign: 'middle' }}>
-                      <path d="M2 22C2 22 10 22 16 16C21 11 20 4 20 4C20 4 13 3 8 8C2 14 2 22 2 22Z" fill="var(--accent-gold)" />
-                      <path d="M12 12L2 22" />
-                    </svg>
-                  </div>
-                )}
+                <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'inline-block' }}>
+                  {siteSettings?.logo_light_url || siteSettings?.logo_url ? (
+                    <img 
+                      src={siteSettings.logo_light_url || siteSettings.logo_url} 
+                      alt={siteSettings.brand_name || "NOVELI"} 
+                      className="brand-logo-img brand-logo-light"
+                      style={{ maxHeight: '36px', width: 'auto', objectFit: 'contain', display: 'block' }}
+                    />
+                  ) : (
+                    <div className="logo-text footer-logo" style={{ color: '#FFFFFF', margin: 0 }}>
+                      {siteSettings?.brand_name || 'NOVELI'}
+                      <span className="logo-sub">{siteSettings?.brand_subtitle || ' — EDITORIAL'}</span>
+                      <svg className="logo-leaf" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '5px', display: 'inline-block', verticalAlign: 'middle' }}>
+                        <path d="M2 22C2 22 10 22 16 16C21 11 20 4 20 4C20 4 13 3 8 8C2 14 2 22 2 22Z" fill="var(--accent-gold)" />
+                        <path d="M12 12L2 22" />
+                      </svg>
+                    </div>
+                  )}
+                </Link>
               </div>
               <p style={{ maxWidth: '280px', lineHeight: '1.6', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)' }}>
                 {fs.contact_description}
@@ -366,6 +382,7 @@ function AppContent() {
         isOpen={sideNavOpen} 
         onClose={() => setSideNavOpen(false)} 
         links={links} 
+        settings={siteSettings}
       />
     </div>
   );
