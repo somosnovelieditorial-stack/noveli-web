@@ -7,7 +7,7 @@ const CheckIcon = () => (
   </svg>
 );
 
-export default function ContactForm({ email: _email, services = [], initialService = 'General' }) {
+export default function ContactForm({ email: _email, services = [], initialService = 'General', initialServiceId = null }) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -17,14 +17,24 @@ export default function ContactForm({ email: _email, services = [], initialServi
     phone: '',
     instagram: '',
     service_interest: initialService || 'General',
-    manuscript_info: ''
+    manuscript_info: '',
+    pages: '',
+    words: '',
+    manuscript_state: 'borrador'
   });
+
+  // Derive selected service requirements
+  const selectedServiceObj = services ? services.find(s => 
+    (initialServiceId && String(s.id) === String(initialServiceId) && s.title === formData.service_interest) || 
+    (s.title === formData.service_interest)
+  ) : null;
+  const requiresManuscriptInfo = selectedServiceObj ? selectedServiceObj.requires_manuscript_info === true : false;
 
   useEffect(() => {
     if (initialService) {
       setFormData(prev => ({ ...prev, service_interest: initialService }));
     }
-  }, [initialService]);
+  }, [initialService, initialServiceId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +51,15 @@ export default function ContactForm({ email: _email, services = [], initialServi
       return;
     }
 
+    if (requiresManuscriptInfo) {
+      const hasPages = formData.pages && String(formData.pages).trim().length > 0;
+      const hasWords = formData.words && String(formData.words).trim().length > 0;
+      if (!hasPages && !hasWords) {
+        setErrorMsg('Para cotizar este servicio necesitamos conocer la extensión aproximada del manuscrito (páginas o palabras).');
+        return;
+      }
+    }
+
     if (!formData.manuscript_info || formData.manuscript_info.trim().length === 0) {
       setErrorMsg('Por favor, describe la información de tu manuscrito.');
       return;
@@ -48,13 +67,23 @@ export default function ContactForm({ email: _email, services = [], initialServi
 
     setLoading(true);
 
+    const extraDetails = [
+      `Servicio Interés: ${formData.service_interest}`,
+      selectedServiceObj ? `Servicio ID: ${selectedServiceObj.id}` : null,
+      formData.pages ? `Páginas Aprox: ${formData.pages}` : null,
+      formData.words ? `Palabras Aprox: ${formData.words}` : null,
+      `Estado Manuscrito: ${formData.manuscript_state}`
+    ].filter(Boolean).join('\n');
+
+    const formattedManuscriptInfo = `${extraDetails}\n\nMensaje/Descripción del Autor:\n${formData.manuscript_info.trim()}`;
+
     const leadData = {
       name: formData.name.trim(),
       email: formData.email.trim(),
       phone: formData.phone ? formData.phone.trim() : null,
       instagram: formData.instagram ? formData.instagram.trim() : null,
       service_interest: formData.service_interest,
-      manuscript_info: formData.manuscript_info.trim(),
+      manuscript_info: formattedManuscriptInfo,
       message: null,
       source: 'website',
       status: 'nuevo',
@@ -106,7 +135,10 @@ export default function ContactForm({ email: _email, services = [], initialServi
               phone: '',
               instagram: '',
               service_interest: initialService || 'General',
-              manuscript_info: ''
+              manuscript_info: '',
+              pages: '',
+              words: '',
+              manuscript_state: 'borrador'
             }); 
             setErrorMsg(null);
           }}
@@ -190,6 +222,69 @@ export default function ContactForm({ email: _email, services = [], initialServi
               <option key={service.id} value={service.title}>{service.title}</option>
             ))}
           </select>
+        </div>
+
+        {/* Dynamic Manuscript Info Fields */}
+        <div style={{
+          border: requiresManuscriptInfo ? '1px solid var(--accent-gold)' : '1px solid var(--gray-border)',
+          padding: '16px',
+          borderRadius: 0,
+          backgroundColor: requiresManuscriptInfo ? 'rgba(199, 148, 58, 0.03)' : 'transparent',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
+        }}>
+          {requiresManuscriptInfo ? (
+            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--accent-gold)', fontWeight: 600 }}>
+              💡 Para cotizar este servicio necesitamos conocer la extensión aproximada del manuscrito.
+            </p>
+          ) : (
+            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+              Detalles del manuscrito (Opcional)
+            </p>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'left' }}>
+              <label htmlFor="form-pages">Páginas aproximadas {requiresManuscriptInfo ? '*' : ''}</label>
+              <input
+                id="form-pages"
+                type="number"
+                disabled={loading}
+                placeholder="Ej. 150"
+                value={formData.pages}
+                onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'left' }}>
+              <label htmlFor="form-words">Palabras aproximadas {requiresManuscriptInfo ? '*' : ''}</label>
+              <input
+                id="form-words"
+                type="number"
+                disabled={loading}
+                placeholder="Ej. 45000"
+                value={formData.words}
+                onChange={(e) => setFormData({ ...formData, words: e.target.value })}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'left' }}>
+              <label htmlFor="form-manuscript-state">Estado del manuscrito</label>
+              <select
+                id="form-manuscript-state"
+                disabled={loading}
+                value={formData.manuscript_state}
+                onChange={(e) => setFormData({ ...formData, manuscript_state: e.target.value })}
+                style={{ height: '42px', padding: '0 12px' }}
+              >
+                <option value="borrador">Borrador</option>
+                <option value="corregido">Corregido</option>
+                <option value="finalizado">Finalizado</option>
+                <option value="no lo sé">No lo sé</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'left' }}>

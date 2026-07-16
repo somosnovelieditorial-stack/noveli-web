@@ -6,6 +6,7 @@ import ServicesPage from './pages/ServicesPage'
 import BooksPage from './pages/BooksPage'
 import NosotrosPage from './pages/NosotrosPage'
 import ContactPage from './pages/ContactPage'
+import ServiceDetailPage from './pages/ServiceDetailPage'
 import BookCover from './components/BookCover'
 import SideNavigation from './components/SideNavigation'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -202,6 +203,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<HomePage data={data} handleReload={handleReload} />} />
           <Route path="/servicios" element={<ServicesPage services={services} servicesError={data.servicesError} />} />
+          <Route path="/servicios/:id" element={<ServiceDetailPage services={services} />} />
           <Route path="/libros" element={<BooksPage books={books} bookCategories={data.bookCategories} booksError={data.booksError} handleReload={handleReload} />} />
           <Route path="/nosotros" element={<NosotrosPage sections={sections} links={links} />} />
           <Route path="/contacto" element={<ContactPage services={services} links={links} />} />

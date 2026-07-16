@@ -5,6 +5,7 @@ export default function ContactPage({ services = [], links = {} }) {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const selectedServiceFromQuery = queryParams.get('servicio');
+  const serviceIdFromQuery = queryParams.get('service_id');
   const selectedService = selectedServiceFromQuery || location.state?.selectedService || 'General';
 
   return (
@@ -37,7 +38,12 @@ export default function ContactPage({ services = [], links = {} }) {
         )}
 
         {/* Contact Form Wrapper */}
-        <ContactForm email={links.email} services={services} initialService={selectedService} />
+        <ContactForm 
+          email={links.email} 
+          services={services} 
+          initialService={selectedService} 
+          initialServiceId={serviceIdFromQuery} 
+        />
 
         <div style={{ marginTop: '28px', textAlign: 'center', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
           <p>¿Prefieres escribirnos directamente? Envíanos un correo a <a href={`mailto:${links.email}`} style={{ color: 'var(--accent-gold)', fontWeight: 'bold' }}>{links.email}</a></p>

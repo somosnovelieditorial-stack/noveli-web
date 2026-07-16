@@ -191,7 +191,7 @@ export default function ServiceCard({ service, index, variant = 'large', onReque
             </div>
 
             <Link 
-              to={`/contacto?servicio=${encodeURIComponent(service.title)}`}
+              to={`/servicios/${service.id}`}
               className="service-action-link"
               style={{ 
                 fontSize: '0.72rem', 
@@ -255,12 +255,13 @@ export default function ServiceCard({ service, index, variant = 'large', onReque
           </span>
         </div>
 
-        <button 
-          onClick={() => onRequestService && onRequestService(service.title)}
+        <Link 
+          to={`/servicios/${service.id}`}
           className="btn btn-service-card-action"
+          style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
         >
-          SOLICITAR PROPUESTA
-        </button>
+          VER DETALLES
+        </Link>
       </div>
     </article>
   );
