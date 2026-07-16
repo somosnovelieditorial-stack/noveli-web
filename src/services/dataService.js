@@ -3,7 +3,13 @@ import { supabase } from '../lib/supabaseClient'
 export const fallbackData = {
   settings: {
     hero_title: "Tu libro merece una edición a la altura de su historia.",
-    hero_subtitle: "En Noveli acompañamos a autores en el proceso editorial, desde la revisión del manuscrito hasta la preparación final para publicación digital o impresa."
+    hero_subtitle: "En Noveli acompañamos a autores en el proceso editorial, desde la revisión del manuscrito hasta la preparación final para publicación digital o impresa.",
+    brand_name: "NOVELI",
+    brand_subtitle: " — EDITORIAL",
+    logo_url: "",
+    logo_dark_url: "",
+    logo_light_url: "",
+    favicon_url: ""
   },
   heroSettings: {
     eyebrow: "Somos Noveli Editorial",
@@ -263,6 +269,12 @@ export async function fetchWebsiteData() {
         const row = settingsData[0]
         data.settings.hero_title = row.hero_title || row.title || row.titulo || fallbackData.settings.hero_title
         data.settings.hero_subtitle = row.hero_subtitle || row.subtitle || row.subtitulo || fallbackData.settings.hero_subtitle
+        data.settings.brand_name = row.brand_name || fallbackData.settings.brand_name
+        data.settings.brand_subtitle = row.brand_subtitle || fallbackData.settings.brand_subtitle
+        data.settings.logo_url = row.logo_url || fallbackData.settings.logo_url
+        data.settings.logo_dark_url = row.logo_dark_url || fallbackData.settings.logo_dark_url
+        data.settings.logo_light_url = row.logo_light_url || fallbackData.settings.logo_light_url
+        data.settings.favicon_url = row.favicon_url || fallbackData.settings.favicon_url
         
         // Populate contact info from settings if available
         const email = row.contact_email || row.email || row.correo || row.correo_contacto
