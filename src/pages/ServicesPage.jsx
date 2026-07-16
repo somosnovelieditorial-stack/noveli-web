@@ -2,11 +2,22 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { formatServicePrice } from '../services/dataService';
 
-export default function ServicesPage({ services = [] }) {
+export default function ServicesPage({ services = [], servicesError = null }) {
   const [selectedCat, setSelectedCat] = useState('Todos');
   const navigate = useNavigate();
 
   const categories = ['Todos', 'Editorial', 'Diseño', 'Producción', 'Marketing', 'Legal', 'Digitalización'];
+
+  const getDecorClass = (category = '') => {
+    const cat = category.toLowerCase().trim();
+    if (cat.includes('digital') || cat.includes('amazon') || cat.includes('epub')) return { className: 'decor-digitalizacion', symbol: '💻' };
+    if (cat.includes('edición') || cat.includes('editorial') || cat.includes('corrección')) return { className: 'decor-editorial', symbol: '✍️' };
+    if (cat.includes('diseño') || cat.includes('arte') || cat.includes('portadas') || cat.includes('maquetación')) return { className: 'decor-diseno', symbol: '🎨' };
+    if (cat.includes('impresión') || cat.includes('producción') || cat.includes('físico')) return { className: 'decor-produccion', symbol: '📖' };
+    if (cat.includes('marketing') || cat.includes('difusión') || cat.includes('redes')) return { className: 'decor-marketing', symbol: '📢' };
+    if (cat.includes('legal') || cat.includes('derechos') || cat.includes('propiedad')) return { className: 'decor-legal', symbol: '📜' };
+    return { className: 'decor-default', symbol: '✨' };
+  };
 
   const filteredServices = services ? services.filter(service => {
     if (String(selectedCat).toUpperCase() === 'TODOS') return true;
@@ -23,11 +34,11 @@ export default function ServicesPage({ services = [] }) {
   }
 
   const handleRequestService = (title) => {
-    navigate('/contacto', { state: { selectedService: title } });
+    navigate(`/contacto?servicio=${encodeURIComponent(title)}`, { state: { selectedService: title } });
   };
 
   return (
-    <div className="section services-page-wrapper fade-in" style={{ backgroundColor: 'var(--crema-papel-light)', minHeight: '80vh', paddingTop: '100px' }}>
+    <div className="section services-page-wrapper fade-in" style={{ backgroundColor: 'var(--crema-papel-light)', minHeight: '80vh', paddingTop: '100px', paddingBottom: '80px' }}>
       <div className="container">
         <div className="section-title-wrapper" style={{ marginBottom: '32px' }}>
           <span className="section-subtitle">— NUESTRA OFERTA —</span>
@@ -36,6 +47,22 @@ export default function ServicesPage({ services = [] }) {
             Acompañamos tu libro desde la revisión ortotipográfica hasta su preparación final para publicación física o digital en plataformas globales.
           </p>
         </div>
+
+        {servicesError && (
+          <div style={{
+            padding: '12px 18px',
+            backgroundColor: '#FDF2F2',
+            borderLeft: '4px solid #F05252',
+            color: '#9B1C1C',
+            fontSize: '0.88rem',
+            fontFamily: 'var(--font-sans)',
+            marginBottom: '24px',
+            borderRadius: '4px',
+            textAlign: 'left'
+          }}>
+            <strong>Error cargando servicios:</strong> {servicesError}
+          </div>
+        )}
 
         {/* Category Filters */}
         <div className="book-filters" style={{ marginBottom: '36px' }}>
@@ -50,14 +77,16 @@ export default function ServicesPage({ services = [] }) {
           ))}
         </div>
 
-        {/* Detailed Services Grid */}
+        {/* Premium Detailed Services Card Grid */}
         {filteredServices.length === 0 ? (
           <p className="empty-services-message" style={{ textAlign: 'center', padding: '60px 0', fontStyle: 'italic', color: 'var(--text-muted)' }}>
             No hay servicios disponibles en esta categoría.
           </p>
         ) : (
-          <div className="services-detailed-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="services-card-grid">
             {filteredServices.map((service, index) => {
+              const { className: decorClass, symbol } = getDecorClass(service.category);
+              
               // Circular linear icons mapped directly to mockup
               const icons = [
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z" /></svg>,
@@ -71,47 +100,53 @@ export default function ServicesPage({ services = [] }) {
               const iconColorClass = iconColors[index % iconColors.length];
 
               return (
-                <article 
-                  key={service.id} 
-                  className={`service-card-detailed ${service.featured ? 'featured-card' : ''}`}
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    border: '1px solid var(--border-color)',
-                    padding: '30px',
-                    display: 'grid',
-                    gridTemplateColumns: 'auto 1fr auto',
-                    gap: '24px',
-                    alignItems: 'center',
-                    transition: 'var(--transition-smooth)'
-                  }}
-                >
-                  <div className={`service-icon-circle ${iconColorClass}`} style={{ width: '56px', height: '56px', marginBottom: 0 }}>
+                <article key={service.id} className="service-card-visual">
+                  {/* Recommended badge */}
+                  {service.featured && (
+                    <span className="service-recommended-badge">RECOMENDADO</span>
+                  )}
+                  
+                  {/* Decorative Header Background */}
+                  <div className={`service-header-decor ${decorClass}`}>
+                    <span style={{ fontSize: '4.5rem', opacity: 0.12, transform: 'scale(1.5)', userSelect: 'none' }}>
+                      {symbol}
+                    </span>
+                  </div>
+
+                  {/* Superposed Icon Circle */}
+                  <div className={`service-icon-circle-superposed ${iconColorClass}`}>
                     {icon}
                   </div>
-                  
-                  <div className="service-details-left" style={{ textAlign: 'left' }}>
-                    <span className="service-category" style={{ fontSize: '0.65rem' }}>{service.category.toUpperCase()}</span>
-                    <h3 className="service-title" style={{ fontSize: '1.3rem', margin: '4px 0 8px' }}>{service.title}</h3>
-                    <p className="service-description-short" style={{ color: 'var(--text-main)', fontSize: '0.88rem', lineHeight: '1.5', margin: 0 }}>
+
+                  {/* Content Body */}
+                  <div className="service-card-body">
+                    <span className="service-category" style={{ fontSize: '0.62rem', letterSpacing: '0.1em', color: 'var(--accent-gold)', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase' }}>
+                      {service.category}
+                    </span>
+                    <h3 className="service-card-title">{service.title}</h3>
+                    
+                    <p className="service-card-desc">
                       {service.short_description || service.description}
                     </p>
+                    
                     {service.full_description && (
-                      <p className="service-description-full" style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: '10px', lineHeight: '1.45' }}>
+                      <p className="service-card-full-desc">
                         {service.full_description}
                       </p>
                     )}
-                  </div>
 
-                  <div className="service-details-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '16px', minWidth: '180px' }}>
-                    <div className="service-price-block" style={{ textAlign: 'right' }}>
-                      <span className="price-value" style={{ fontSize: '0.85rem', color: 'var(--wine-dark)', display: 'block', fontWeight: 'bold' }}>
+                    {/* Price block */}
+                    <div className="service-card-price-block">
+                      <span className="service-card-price-label">Inversión</span>
+                      <span className="service-card-price-value">
                         {formatServicePrice(service.price_from, service.currency)}
                       </span>
                     </div>
+
+                    {/* Action Button */}
                     <button 
                       onClick={() => handleRequestService(service.title)}
-                      className="btn btn-primary"
-                      style={{ padding: '8px 16px', fontSize: '0.58rem' }}
+                      className="btn btn-service-card-action"
                     >
                       SOLICITAR PROPUESTA
                     </button>

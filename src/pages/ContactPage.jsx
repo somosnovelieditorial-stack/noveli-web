@@ -3,7 +3,9 @@ import ContactForm from '../components/ContactForm';
 
 export default function ContactPage({ services = [], links = {} }) {
   const location = useLocation();
-  const selectedService = location.state?.selectedService || 'General';
+  const queryParams = new URLSearchParams(location.search);
+  const selectedServiceFromQuery = queryParams.get('servicio');
+  const selectedService = selectedServiceFromQuery || location.state?.selectedService || 'General';
 
   return (
     <div className="section contact-page-wrapper fade-in" style={{ backgroundColor: 'var(--crema-papel-light)', minHeight: '85vh', paddingTop: '100px' }}>
@@ -17,7 +19,7 @@ export default function ContactPage({ services = [], links = {} }) {
         </div>
 
         {/* Dynamic Service selection prefill banner */}
-        {location.state?.selectedService && (
+        {(selectedServiceFromQuery || location.state?.selectedService) && (
           <div style={{
             padding: '12px 18px',
             backgroundColor: 'rgba(199, 148, 58, 0.08)',

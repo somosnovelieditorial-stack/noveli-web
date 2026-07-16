@@ -177,6 +177,8 @@ export const fallbackData = {
 export async function fetchWebsiteData() {
   // Create a deep copy of fallbackData to avoid side-effects
   const data = JSON.parse(JSON.stringify(fallbackData))
+  data.servicesError = null
+  data.booksError = null
 
   if (!supabase) {
     console.log("Using fallback data (Supabase not initialized)")
@@ -233,19 +235,19 @@ export async function fetchWebsiteData() {
 
   // 2. Fetch services
   try {
-    const organizationId = '11111111-1111-1111-1111-111111111111';
+    console.log('ENV URL:', import.meta.env.VITE_SUPABASE_URL);
+    console.log('Supabase client existe:', !!supabase);
+
     const { data: servicesData, error } = await supabase
       .from('website_services')
       .select('id, organization_id, title, short_description, full_description, price_from, currency, category, featured, visible_on_website, active, display_order, created_at')
-      .eq('organization_id', organizationId)
       .order('display_order', { ascending: true })
       .order('created_at', { ascending: true })
 
-    if (error) throw error
+    console.log('Error servicios:', error);
+    console.log('Data servicios:', servicesData);
 
-    if (import.meta.env.DEV) {
-      console.log('Servicios crudos desde Supabase:', servicesData);
-    }
+    if (error) throw error
 
     // Map and filter active/visible on website (programmatically to tolerate nulls)
     const activeServices = (servicesData || []).filter(row => row.active !== false && row.visible_on_website !== false)
@@ -267,6 +269,9 @@ export async function fetchWebsiteData() {
       created_at: row.created_at
     }))
   } catch (err) {
+    console.error("Error al cargar servicios desde Supabase:", err);
+    data.servicesError = err.message || String(err);
+    data.services = [];
     console.warn("Failed to fetch website_services, using fallback:", err.message || err)
   }
 
