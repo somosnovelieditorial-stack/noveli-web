@@ -31,6 +31,65 @@ const getServiceIcon = (iconName, index) => {
   return defaultIcons[index % defaultIcons.length];
 };
 
+const getQuickServiceIcon = (iconName) => {
+  const icons = {
+    feather: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
+        <line x1="16" y1="8" x2="2" y2="22" />
+        <line x1="17.5" y1="15" x2="9" y2="15" />
+      </svg>
+    ),
+    book: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+      </svg>
+    ),
+    layout: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+        <line x1="3" y1="9" x2="21" y2="9" />
+        <line x1="9" y1="21" x2="9" y2="9" />
+      </svg>
+    ),
+    upload: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="17 8 12 3 7 8" />
+        <line x1="12" y1="3" x2="12" y2="15" />
+      </svg>
+    ),
+    pen: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+      </svg>
+    ),
+    file: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+      </svg>
+    ),
+    megaphone: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11 5L6 9H2v6h4l5 4V5z" />
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+      </svg>
+    ),
+    shield: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg>
+    )
+  };
+  
+  const key = String(iconName || 'feather').toLowerCase().trim();
+  return icons[key] || icons.feather;
+};
+
 const renderCardHeader = (service) => {
   const { className: decorClass, symbol } = getDecorClass(service.category);
   
@@ -72,7 +131,7 @@ const renderCardHeader = (service) => {
 };
 
 export default function HomePage({ data, handleReload }) {
-  const { services, books, sections, links, bookCategories = [] } = data;
+  const { services, books, sections, links, bookCategories = [], heroSettings, heroQuickServices } = data;
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedBook, setSelectedBook] = useState(null);
   const booksGridRef = useRef(null);
@@ -168,97 +227,159 @@ export default function HomePage({ data, handleReload }) {
   // Max 6 services
   const homeServices = combinedServices.slice(0, 6);
 
-  return (
+    return (
     <div className="fade-in">
       {/* 2. Hero Section */}
-      <section id="inicio" className="hero-section">
-        <div className="hero-grid-container">
-          <div className="hero-left-content">
-            <span className="hero-badge">Somos Noveli Editorial</span>
-            
-            <h1 className="hero-title">
-              Tu libro merece una edición a la altura de su <span className="highlight-gold">historia.</span>
-            </h1>
-            
-            <div className="hero-divider-line"></div>
-            
-            <p className="hero-subtitle">
-              En Noveli acompañamos a autores en el proceso editorial, desde la revisión del manuscrito hasta la preparación final para publicación digital o impresa.
-            </p>
-            
-            <div className="hero-quick-services">
-              <div className="quick-service-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                </svg>
-                <span>CORRECCIÓN EDITORIAL</span>
-              </div>
-              <div className="quick-service-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <rect width="18" height="18" x="3" y="3" rx="2" />
-                  <path d="M3 9h18" />
-                  <path d="M9 21V9" />
-                </svg>
-                <span>MAQUETACIÓN PROFESIONAL</span>
-              </div>
-              <div className="quick-service-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                </svg>
-                <span>DISEÑO DE PORTADAS</span>
-              </div>
-              <div className="quick-service-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M12 2v20" />
-                  <path d="m17 5-5-3-5 3" />
-                  <path d="m17 19-5 3-5-3" />
-                  <path d="M2 12h20" />
-                </svg>
-                <span>AUTOPUBLICACIÓN EN AMAZON</span>
-              </div>
-            </div>
+      {(!heroSettings || heroSettings.active !== false) && (() => {
+        const heroStyle = {};
+        if (heroSettings?.background_image_url) {
+          heroStyle.backgroundImage = `url(${heroSettings.background_image_url})`;
+          heroStyle.backgroundSize = 'cover';
+          heroStyle.backgroundPosition = 'center';
+        }
 
-            <div className="hero-btns">
-              <Link to="/contacto" className="btn btn-hero-primary" id="btn-hero-contact">SOLICITAR PROPUESTA EDITORIAL</Link>
-              <Link to="/servicios" className="btn btn-hero-secondary" id="btn-hero-services">VER SERVICIOS</Link>
+        const renderButton = (text, url, className, id) => {
+          if (!text || !url) return null;
+          const isHash = url.startsWith('#') || url.startsWith('http');
+          if (isHash) {
+            return <a href={url} className={className} id={id}>{text}</a>;
+          }
+          return <Link to={url} className={className} id={id}>{text}</Link>;
+        };
+
+        return (
+          <section id="inicio" className="hero-section" style={heroStyle}>
+            <div className="hero-grid-container">
+              <div className="hero-left-content">
+                <span className="hero-badge">{heroSettings?.eyebrow || "Somos Noveli Editorial"}</span>
+                
+                <h1 className="hero-title">
+                  {heroSettings?.title || "Tu libro merece una edición a la altura de su"}{' '}
+                  <span className="highlight-gold">{heroSettings?.highlighted_word || "historia."}</span>
+                </h1>
+                
+                <div className="hero-divider-line"></div>
+                
+                <p className="hero-subtitle">
+                  {heroSettings?.subtitle || "En Noveli acompañamos a autores en el proceso editorial, desde la revisión del manuscrito hasta la preparación final para publicación digital o impresa."}
+                </p>
+                
+                <div className="hero-quick-services">
+                  {heroQuickServices && heroQuickServices.length > 0 ? (
+                    heroQuickServices.map((qs, idx) => {
+                      const content = (
+                        <>
+                          {getQuickServiceIcon(qs.icon_name)}
+                          <span>{qs.label.toUpperCase()}</span>
+                        </>
+                      );
+                      if (qs.link_url) {
+                        const isHash = qs.link_url.startsWith('#') || qs.link_url.startsWith('http');
+                        if (isHash) {
+                          return (
+                            <a key={idx} href={qs.link_url} className="quick-service-item hover:opacity-80" style={{ textDecoration: 'none', color: 'inherit' }}>
+                              {content}
+                            </a>
+                          );
+                        }
+                        return (
+                          <Link key={idx} to={qs.link_url} className="quick-service-item hover:opacity-80" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            {content}
+                          </Link>
+                        );
+                      }
+                      return (
+                        <div key={idx} className="quick-service-item">
+                          {content}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <>
+                      <div className="quick-service-item">
+                        {getQuickServiceIcon('pen')}
+                        <span>CORRECCIÓN EDITORIAL</span>
+                      </div>
+                      <div className="quick-service-item">
+                        {getQuickServiceIcon('layout')}
+                        <span>MAQUETACIÓN PROFESIONAL</span>
+                      </div>
+                      <div className="quick-service-item">
+                        {getQuickServiceIcon('book')}
+                        <span>DISEÑO DE PORTADAS</span>
+                      </div>
+                      <div className="quick-service-item">
+                        {getQuickServiceIcon('upload')}
+                        <span>AUTOPUBLICACIÓN EN AMAZON</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="hero-btns">
+                  {renderButton(heroSettings?.primary_button_text || "SOLICITAR PROPUESTA EDITORIAL", heroSettings?.primary_button_url || "/contacto", "btn btn-hero-primary", "btn-hero-contact")}
+                  {renderButton(heroSettings?.secondary_button_text || "VER SERVICIOS", heroSettings?.secondary_button_url || "/servicios", "btn btn-hero-secondary", "btn-hero-services")}
+                </div>
+              </div>
+              
+              <div className="hero-right-visual">
+                <div className="hero-books-showcase">
+                  {heroSettings?.show_featured_book && heroSettings?.featured_book_id ? (
+                    (() => {
+                      const featuredBook = books?.find(b => b.id === heroSettings.featured_book_id);
+                      if (featuredBook) {
+                        return (
+                          <div className="hero-showcase-book book-0 cursor-pointer" style={{ transform: 'scale(1.15)', margin: '0 auto' }} onClick={() => setSelectedBook(featuredBook)}>
+                            <BookCover 
+                              title={featuredBook.title} 
+                              author={featuredBook.author} 
+                              coverUrl={getBookCover(featuredBook)} 
+                              index={0} 
+                            />
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()
+                  ) : heroSettings?.side_image_url ? (
+                    <div className="hero-side-custom-image" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <img src={heroSettings.side_image_url} style={{ maxWidth: '105%', maxHeight: '420px', borderRadius: '8px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', objectFit: 'cover' }} alt="Visual" />
+                    </div>
+                  ) : (
+                    books && books.slice(0, 3).length > 0 ? (
+                      books.slice(0, 3).map((book, index) => (
+                        <div key={book.id} className={`hero-showcase-book book-${index} cursor-pointer`} onClick={() => setSelectedBook(book)}>
+                          <BookCover 
+                            title={book.title} 
+                            author={book.author} 
+                            coverUrl={getBookCover(book)} 
+                            index={index} 
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      [
+                        { title: "Fragmentos de lo que fuimos", author: "A.M." },
+                        { title: "Besos con sabor a sal", author: "Vale Barrios" },
+                        { title: "Bajo el cielo que callamos", author: "Daniela Torres" }
+                      ].map((book, index) => (
+                        <div key={index} className={`hero-showcase-book book-${index}`}>
+                          <BookCover 
+                            title={book.title} 
+                            author={book.author} 
+                            coverUrl="" 
+                            index={index} 
+                          />
+                        </div>
+                      ))
+                    )
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-          
-          <div className="hero-right-visual">
-            <div className="hero-books-showcase">
-              {books && books.slice(0, 3).length > 0 ? (
-                books.slice(0, 3).map((book, index) => (
-                  <div key={book.id} className={`hero-showcase-book book-${index}`}>
-                    <BookCover 
-                      title={book.title} 
-                      author={book.author} 
-                      coverUrl={getBookCover(book)} 
-                      index={index} 
-                    />
-                  </div>
-                ))
-              ) : (
-                [
-                  { title: "Fragmentos de lo que fuimos", author: "A.M." },
-                  { title: "Besos con sabor a sal", author: "Vale Barrios" },
-                  { title: "Bajo el cielo que callamos", author: "Daniela Torres" }
-                ].map((book, index) => (
-                  <div key={index} className={`hero-showcase-book book-${index}`}>
-                    <BookCover 
-                      title={book.title} 
-                      author={book.author} 
-                      coverUrl="" 
-                      index={index} 
-                    />
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       {/* 3. Servicios Section */}
       <section id="servicios" className="section services-section">

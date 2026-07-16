@@ -181,7 +181,23 @@ export const fallbackData = {
     instagram_url: "https://instagram.com/somosnoveli",
     instagram_enabled: true
   },
-  footerGallery: []
+  footerGallery: [],
+  heroSettings: {
+    eyebrow: 'EDITORIAL INDEPENDIENTE',
+    title: 'Tu historia merece ser contada de la manera más',
+    highlighted_word: 'hermosa',
+    subtitle: 'Ayudamos a autores independientes a maquetar, corregir, diseñar y distribuir sus libros a nivel global con calidad profesional.',
+    primary_button_text: 'Ver Servicios',
+    primary_button_url: '#servicios',
+    secondary_button_text: 'Conoce el Catálogo',
+    secondary_button_url: '#libros',
+    background_image_url: '',
+    side_image_url: '',
+    featured_book_id: '',
+    show_featured_book: true,
+    active: true
+  },
+  heroQuickServices: []
 }
 
 export async function fetchWebsiteData() {
@@ -498,6 +514,61 @@ export async function fetchWebsiteData() {
     }
   } catch (err) {
     console.warn("Failed to fetch website_footer_gallery, using fallback:", err.message || err)
+  }
+
+  // 8. Fetch hero settings
+  try {
+    const { data: heroData, error } = await supabase
+      .from('website_hero_settings')
+      .select('id, eyebrow, title, highlighted_word, subtitle, primary_button_text, primary_button_url, secondary_button_text, secondary_button_url, background_image_url, side_image_url, featured_book_id, show_featured_book, active')
+      .eq('active', true)
+      .limit(1)
+
+    if (error) throw error
+
+    if (heroData && heroData.length > 0) {
+      const row = heroData[0]
+      data.heroSettings = {
+        eyebrow: row.eyebrow || fallbackData.heroSettings.eyebrow,
+        title: row.title || fallbackData.heroSettings.title,
+        highlighted_word: row.highlighted_word || fallbackData.heroSettings.highlighted_word,
+        subtitle: row.subtitle || fallbackData.heroSettings.subtitle,
+        primary_button_text: row.primary_button_text || fallbackData.heroSettings.primary_button_text,
+        primary_button_url: row.primary_button_url || fallbackData.heroSettings.primary_button_url,
+        secondary_button_text: row.secondary_button_text || fallbackData.heroSettings.secondary_button_text,
+        secondary_button_url: row.secondary_button_url || fallbackData.heroSettings.secondary_button_url,
+        background_image_url: row.background_image_url || fallbackData.heroSettings.background_image_url,
+        side_image_url: row.side_image_url || fallbackData.heroSettings.side_image_url,
+        featured_book_id: row.featured_book_id || fallbackData.heroSettings.featured_book_id,
+        show_featured_book: row.show_featured_book !== false,
+        active: row.active !== false
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to fetch website_hero_settings, using fallback:", err.message || err)
+  }
+
+  // 9. Fetch hero quick services
+  try {
+    const { data: qData, error } = await supabase
+      .from('website_hero_quick_services')
+      .select('label, icon_name, link_url, display_order, active')
+      .eq('active', true)
+      .order('display_order', { ascending: true })
+
+    if (error) throw error
+
+    if (qData && qData.length > 0) {
+      data.heroQuickServices = qData.map(row => ({
+        label: row.label || '',
+        icon_name: row.icon_name || 'feather',
+        link_url: row.link_url || '',
+        display_order: row.display_order,
+        active: row.active !== false
+      }))
+    }
+  } catch (err) {
+    console.warn("Failed to fetch website_hero_quick_services, using fallback:", err.message || err)
   }
 
   return data
