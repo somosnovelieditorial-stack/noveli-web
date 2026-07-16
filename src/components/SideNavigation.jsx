@@ -133,7 +133,7 @@ export default function SideNavigation({ isOpen, onClose, links = {}, settings =
             to="/" 
             className={({ isActive }) => `side-nav-link ${isActive ? 'active' : ''}`}
             style={({ isActive }) => ({
-              color: isActive ? 'var(--accent-gold)' : 'rgba(255, 249, 239, 0.85)',
+              color: isActive ? 'var(--accent-gold)' : '#FFFFFF',
               fontFamily: 'var(--font-sans)',
               fontSize: '1rem',
               fontWeight: 700,
@@ -151,7 +151,7 @@ export default function SideNavigation({ isOpen, onClose, links = {}, settings =
             to="/servicios" 
             className={({ isActive }) => `side-nav-link ${isActive ? 'active' : ''}`}
             style={({ isActive }) => ({
-              color: isActive ? 'var(--accent-gold)' : 'rgba(255, 249, 239, 0.85)',
+              color: isActive ? 'var(--accent-gold)' : '#FFFFFF',
               fontFamily: 'var(--font-sans)',
               fontSize: '1rem',
               fontWeight: 700,
@@ -169,7 +169,7 @@ export default function SideNavigation({ isOpen, onClose, links = {}, settings =
             to="/libros" 
             className={({ isActive }) => `side-nav-link ${isActive ? 'active' : ''}`}
             style={({ isActive }) => ({
-              color: isActive ? 'var(--accent-gold)' : 'rgba(255, 249, 239, 0.85)',
+              color: isActive ? 'var(--accent-gold)' : '#FFFFFF',
               fontFamily: 'var(--font-sans)',
               fontSize: '1rem',
               fontWeight: 700,
@@ -187,7 +187,7 @@ export default function SideNavigation({ isOpen, onClose, links = {}, settings =
             to="/nosotros" 
             className={({ isActive }) => `side-nav-link ${isActive ? 'active' : ''}`}
             style={({ isActive }) => ({
-              color: isActive ? 'var(--accent-gold)' : 'rgba(255, 249, 239, 0.85)',
+              color: isActive ? 'var(--accent-gold)' : '#FFFFFF',
               fontFamily: 'var(--font-sans)',
               fontSize: '1rem',
               fontWeight: 700,
@@ -205,7 +205,7 @@ export default function SideNavigation({ isOpen, onClose, links = {}, settings =
             to="/contacto" 
             className={({ isActive }) => `side-nav-link ${isActive ? 'active' : ''}`}
             style={({ isActive }) => ({
-              color: isActive ? 'var(--accent-gold)' : 'rgba(255, 249, 239, 0.85)',
+              color: isActive ? 'var(--accent-gold)' : '#FFFFFF',
               fontFamily: 'var(--font-sans)',
               fontSize: '1rem',
               fontWeight: 700,
@@ -221,7 +221,7 @@ export default function SideNavigation({ isOpen, onClose, links = {}, settings =
           </NavLink>
         </nav>
 
-        <div style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.08)', marginBottom: '32px' }}></div>
+        <div style={{ height: '1px', backgroundColor: 'rgba(199, 148, 58, 0.15)', marginBottom: '32px' }}></div>
 
         {/* CTA Request Button */}
         <Link 
@@ -229,6 +229,7 @@ export default function SideNavigation({ isOpen, onClose, links = {}, settings =
           className="btn btn-primary"
           style={{ 
             textAlign: 'center', 
+            borderRadius: 0,
             textDecoration: 'none', 
             fontSize: '0.78rem',
             padding: '12px',

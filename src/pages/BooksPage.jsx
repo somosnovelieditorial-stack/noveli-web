@@ -102,7 +102,15 @@ export default function BooksPage({ books = [], bookCategories = [], booksError 
             No se encontraron libros en esta categoría.
           </p>
         ) : (
-          <div className="books-full-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '30px 24px' }}>
+          <div 
+            className="books-full-grid" 
+            style={{ 
+              display: 'grid', 
+              gridTemplateColumns: filteredBooks.length === 1 ? 'minmax(180px, 240px)' : 'repeat(auto-fill, minmax(180px, 1fr))', 
+              justifyContent: 'center', 
+              gap: '30px 24px' 
+            }}
+          >
             {filteredBooks.map((book, index) => {
               const originText = book.book_origin === 'published_by_noveli' 
                 ? 'Publicado por Noveli' 
@@ -122,7 +130,7 @@ export default function BooksPage({ books = [], bookCategories = [], booksError 
                     href={action.url} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`btn book-btn ${book.book_origin === 'published_by_noveli' ? 'btn-primary' : 'btn-secondary'}`}
+                    className={`btn book-btn ${book.book_origin === 'published_by_noveli' ? 'btn-primary' : 'btn-dark'}`}
                     style={{ width: '100%', padding: '8px 12px' }}
                   >
                     {action.label}

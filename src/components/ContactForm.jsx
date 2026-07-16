@@ -223,7 +223,7 @@ export default function ContactForm({ email: _email, services = [], initialServi
 
         <button 
           type="submit" 
-          className="btn btn-primary" 
+          className="btn btn-dark" 
           id="btn-submit-proposal" 
           disabled={loading}
           style={{ marginTop: '4px', width: '100%', opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}

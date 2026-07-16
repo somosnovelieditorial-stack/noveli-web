@@ -492,7 +492,13 @@ export default function HomePage({ data, handleReload }) {
               ‹
             </button>
 
-            <div className="books-grid" ref={booksGridRef}>
+            <div 
+              className="books-grid" 
+              ref={booksGridRef}
+              style={{
+                justifyContent: (homeBooks && homeBooks.length === 1) ? 'center' : 'flex-start'
+              }}
+            >
               {(!books || books.length === 0) ? (
                 <p className="empty-catalog-message" style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '40px 0', fontStyle: 'italic', color: 'var(--text-muted)', width: '100%', fontFamily: 'var(--font-serif-body)' }}>
                   Aún no hay libros publicados en el catálogo.
@@ -517,7 +523,7 @@ export default function HomePage({ data, handleReload }) {
                         href={action.url} 
                         target="_blank" 
                         rel="noopener noreferrer" 
-                        className={`btn book-btn ${book.book_origin === 'published_by_noveli' ? 'btn-primary' : 'btn-secondary'}`}
+                        className={`btn book-btn ${book.book_origin === 'published_by_noveli' ? 'btn-primary' : 'btn-dark'}`}
                         style={{ width: '100%', padding: '6px 12px', fontSize: '0.72rem', marginTop: '10px' }}
                       >
                         {action.label}

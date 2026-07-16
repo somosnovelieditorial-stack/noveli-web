@@ -20,6 +20,13 @@ export default function BookDetailModal({ book, onClose }) {
 
   const action = getBookAction(book);
 
+  const getButtonClass = () => {
+    if (action.disabled || book.is_coming_soon) return 'btn-outline';
+    if (book.book_origin === 'published_by_noveli' || book.purchase_type === 'noveli') return 'btn-primary';
+    return 'btn-dark';
+  };
+  const btnClass = getButtonClass();
+
   const getOriginLabel = (origin) => {
     if (book.is_coming_soon) return 'Próximamente';
     if (origin === 'published_by_noveli' || book.purchase_type === 'noveli') return 'Publicado por Noveli';
@@ -89,13 +96,13 @@ export default function BookDetailModal({ book, onClose }) {
                   href={action.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn btn-primary book-modal-btn"
+                  className={`btn ${btnClass} book-modal-btn`}
                 >
                   {action.label.toUpperCase()}
                 </a>
               ) : (
                 <button 
-                  className="btn btn-primary book-modal-btn"
+                  className={`btn ${btnClass} book-modal-btn`}
                   disabled={action.disabled}
                   onClick={action.action === 'modal' ? onClose : undefined}
                 >
