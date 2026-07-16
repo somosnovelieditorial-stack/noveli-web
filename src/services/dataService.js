@@ -60,16 +60,16 @@ export const fallbackData = {
   books: [
     {
       id: 1,
-      title: "Besos con sabor a sal",
-      author: "Vale Barrios",
+      title: "El Imperio de las Mareas",
+      author: "Noveli",
       cover_url: "",
       status: "Destacado",
-      sale_url: "https://amazon.com",
+      sale_url: "",
       book_origin: "published_by_noveli",
       is_featured: true,
       is_new: false,
       is_coming_soon: false,
-      noveli_purchase_url: "https://amazon.com",
+      noveli_purchase_url: "",
       author_purchase_url: "",
       categories: [
         { id: "cat-2", name: "Novela", slug: "novela", type: "genre" }
@@ -77,16 +77,16 @@ export const fallbackData = {
     },
     {
       id: 2,
-      title: "Bajo el cielo que callamos",
-      author: "Daniela Torres",
+      title: "Susurros del Viento",
+      author: "Colección",
       cover_url: "",
       status: "Novedad",
-      sale_url: "https://amazon.com",
+      sale_url: "",
       book_origin: "published_by_noveli",
       is_featured: false,
       is_new: true,
       is_coming_soon: false,
-      noveli_purchase_url: "https://amazon.com",
+      noveli_purchase_url: "",
       author_purchase_url: "",
       categories: [
         { id: "cat-2", name: "Novela", slug: "novela", type: "genre" }
@@ -94,16 +94,16 @@ export const fallbackData = {
     },
     {
       id: 3,
-      title: "Fragmentos de lo que fuimos",
-      author: "A.M.",
+      title: "Voces de la Memoria",
+      author: "Edición Especial",
       cover_url: "",
       status: "",
-      sale_url: "https://amazon.com",
+      sale_url: "",
       book_origin: "published_by_noveli",
       is_featured: false,
       is_new: false,
       is_coming_soon: false,
-      noveli_purchase_url: "https://amazon.com",
+      noveli_purchase_url: "",
       author_purchase_url: "",
       categories: [
         { id: "cat-1", name: "Poesía", slug: "poesia", type: "genre" }
@@ -111,42 +111,42 @@ export const fallbackData = {
     },
     {
       id: 4,
-      title: "La raíz de lo que no se ve",
-      author: "Sofía Delgado",
+      title: "El Umbral del Silencio",
+      author: "Obra Selecta",
       cover_url: "",
       status: "Destacado",
-      sale_url: "https://amazon.com",
+      sale_url: "",
       book_origin: "author_purchase",
       is_featured: true,
       is_new: false,
       is_coming_soon: false,
       noveli_purchase_url: "",
-      author_purchase_url: "https://amazon.com",
+      author_purchase_url: "",
       categories: [
         { id: "cat-2", name: "Novela", slug: "novela", type: "genre" }
       ]
     },
     {
       id: 5,
-      title: "Cartas a mi mejor enemigo",
-      author: "Javier R.",
+      title: "Senderos Ocultos",
+      author: "Antología",
       cover_url: "",
       status: "",
-      sale_url: "https://amazon.com",
+      sale_url: "",
       book_origin: "author_purchase",
       is_featured: false,
       is_new: false,
       is_coming_soon: false,
       noveli_purchase_url: "",
-      author_purchase_url: "https://amazon.com",
+      author_purchase_url: "",
       categories: [
         { id: "cat-2", name: "Novela", slug: "novela", type: "genre" }
       ]
     },
     {
       id: 6,
-      title: "El eco de las sombras",
-      author: "Luna Véliz",
+      title: "El Despertar del Fuego",
+      author: "Edición Especial",
       cover_url: "",
       status: "Próximamente",
       sale_url: "",
@@ -240,7 +240,7 @@ export async function fetchWebsiteData() {
 
     const { data: servicesData, error } = await supabase
       .from('website_services')
-      .select('id, organization_id, title, short_description, full_description, price_from, currency, category, featured, visible_on_website, active, display_order, created_at')
+      .select('id, organization_id, title, short_description, full_description, price_from, currency, category, featured, visible_on_website, active, display_order, image_url, background_url, icon_name, color_theme, created_at')
       .order('display_order', { ascending: true })
       .order('created_at', { ascending: true })
 
@@ -265,6 +265,10 @@ export async function fetchWebsiteData() {
       featured: row.featured === true,
       visible_on_website: row.visible_on_website !== false,
       active: row.active !== false,
+      image_url: row.image_url || '',
+      background_url: row.background_url || '',
+      icon_name: row.icon_name || '',
+      color_theme: row.color_theme || '',
       display_order: row.display_order,
       created_at: row.created_at
     }))
@@ -306,20 +310,28 @@ export async function fetchWebsiteData() {
     }
 
     // 3c. Fetch books (only active/visible, ordered display_order, then created_at)
-    const organizationId = '11111111-1111-1111-1111-111111111111';
     const { data: booksData, error } = await supabase
       .from('website_books')
-      .select('id, organization_id, title, author, description, cover_url, cover_image_url, active, visible, book_origin, purchase_type, author_purchase_url, noveli_purchase_url, is_featured, is_new, is_coming_soon, display_order, created_at')
-      .eq('organization_id', organizationId)
-      .neq('active', false)
-      .neq('visible', false)
+      .select('id,organization_id,title,author,cover_url,cover_image_url,short_description,genre,status,featured,visible_on_website,sale_url,sale_platform,display_order,created_at,active,book_origin,purchase_type,author_purchase_url,noveli_purchase_url,is_featured,is_new,is_coming_soon,visible')
       .order('display_order', { ascending: true })
       .order('created_at', { ascending: false })
 
-    if (error) throw error
+    if (import.meta.env.DEV) {
+      console.log('Error libros:', error)
+      console.log('Libros crudos desde Supabase:', booksData)
+    }
+
+    if (error) {
+      data.booksError = error.message;
+      throw error;
+    }
 
     // Map activeBooks to empty array first, to clear fallback if Supabase responded successfully
-    const activeBooks = (booksData || []).filter(row => row.visible !== false && row.active !== false)
+    const activeBooks = (booksData || []).filter(row => row.visible !== false && row.active !== false && row.visible_on_website !== false)
+
+    if (import.meta.env.DEV) {
+      console.log('Libros visibles:', activeBooks)
+    }
 
     data.books = activeBooks.map(row => {
       const linkedCatIds = categoryLinks
@@ -333,7 +345,13 @@ export async function fetchWebsiteData() {
         organization_id: row.organization_id,
         title: row.title || row.titulo || row.nombre || 'Libro sin título',
         author: row.author || row.autor || 'Autor desconocido',
-        description: row.description || '',
+        short_description: row.short_description || '',
+        genre: row.genre || '',
+        status: row.status || '',
+        featured: !!row.featured,
+        visible_on_website: row.visible_on_website !== false,
+        sale_url: row.sale_url || '',
+        sale_platform: row.sale_platform || '',
         cover_url: row.cover_url || '',
         cover_image_url: row.cover_image_url || '',
         visible: row.visible,
@@ -362,6 +380,7 @@ export async function fetchWebsiteData() {
     }
   } catch (err) {
     console.error("Error al cargar libros desde Supabase:", err)
+    data.booksError = err.message || String(err);
     console.warn("Failed to fetch website_books, using fallback:", err.message || err)
   }
 
@@ -422,8 +441,8 @@ export async function fetchWebsiteData() {
 }
 
 export function getBookCover(book) {
-  if (!book) return null
-  return book.cover_image_url || book.cover_url || null
+  if (!book) return null;
+  return book.cover_image_url || book.cover_url || null;
 }
 
 export function formatServicePrice(price, currency) {
@@ -435,4 +454,62 @@ export function formatServicePrice(price, currency) {
     return `DESDE $${formatted} CLP`;
   }
   return `DESDE $${formatted}`;
+}
+
+export function getBookSummary(book) {
+  if (!book) return 'Resumen no disponible por el momento.';
+  return book.short_description || 'Resumen no disponible por el momento.';
+}
+
+export function getSalePlatform(book) {
+  if (!book) return '';
+  return book.sale_platform || '';
+}
+
+export function getBookPurchaseUrl(book) {
+  if (!book) return null;
+  
+  const isAuthor = book.purchase_type === 'external_author' || book.book_origin === 'author_purchase';
+  if (isAuthor) {
+    return book.author_purchase_url || book.sale_url || null;
+  }
+  
+  const isNoveli = book.purchase_type === 'noveli' || book.book_origin === 'published_by_noveli';
+  if (isNoveli) {
+    return book.noveli_purchase_url || book.sale_url || null;
+  }
+  
+  return book.sale_url || book.author_purchase_url || book.noveli_purchase_url || null;
+}
+
+export function getBookAction(book) {
+  if (!book) return { label: 'Ver detalles', action: 'modal' };
+
+  if (book.is_coming_soon === true) {
+    return { label: 'Próximamente', disabled: true, action: 'none' };
+  }
+
+  const isAuthor = book.book_origin === 'author_purchase' || book.purchase_type === 'external_author';
+  if (isAuthor) {
+    const url = getBookPurchaseUrl(book);
+    if (url) {
+      return { label: 'Comprar con el autor', url, action: 'link' };
+    }
+    return { label: 'Ver detalles', action: 'modal' };
+  }
+
+  const isNoveli = book.book_origin === 'published_by_noveli' || book.purchase_type === 'noveli';
+  if (isNoveli) {
+    const url = getBookPurchaseUrl(book);
+    if (url) {
+      return { label: 'Comprar en Noveli', url, action: 'link' };
+    }
+    return { label: 'Ver detalles', action: 'modal' };
+  }
+
+  // Any other case
+  if (book.sale_url) {
+    return { label: 'Comprar', url: book.sale_url, action: 'link' };
+  }
+  return { label: 'Ver detalles', action: 'modal' };
 }

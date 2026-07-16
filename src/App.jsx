@@ -136,7 +136,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<HomePage data={data} handleReload={handleReload} />} />
           <Route path="/servicios" element={<ServicesPage services={services} servicesError={data.servicesError} />} />
-          <Route path="/libros" element={<BooksPage books={books} bookCategories={data.bookCategories} handleReload={handleReload} />} />
+          <Route path="/libros" element={<BooksPage books={books} bookCategories={data.bookCategories} booksError={data.booksError} handleReload={handleReload} />} />
           <Route path="/nosotros" element={<NosotrosPage sections={sections} links={links} />} />
           <Route path="/contacto" element={<ContactPage services={services} links={links} />} />
         </Routes>

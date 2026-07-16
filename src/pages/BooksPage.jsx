@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import BookCover from '../components/BookCover';
-import { getBookCover } from '../services/dataService';
+import BookDetailModal from '../components/BookDetailModal';
+import { getBookCover, getBookAction } from '../services/dataService';
 
-export default function BooksPage({ books = [], bookCategories = [], handleReload }) {
+export default function BooksPage({ books = [], bookCategories = [], booksError = null, handleReload }) {
   const [activeFilter, setActiveFilter] = useState('all');
+  const [selectedBook, setSelectedBook] = useState(null);
 
   // Build the catalog filter options dynamically and in UPPERCASE
   const filterOptions = [
@@ -24,7 +26,10 @@ export default function BooksPage({ books = [], bookCategories = [], handleReloa
   filterOptions.push({ id: 'coming_soon', label: 'PRÓXIMAMENTE' });
 
   const filteredBooks = books ? books.filter(book => {
-    if (activeFilter === 'all') return true;
+    // Client-side active and visible enforcement
+    if (book.active === false || book.visible === false) return false;
+
+    if (activeFilter === 'all' || String(activeFilter).toLowerCase() === 'general') return true;
     if (activeFilter === 'published_by_noveli') return book.book_origin === 'published_by_noveli';
     if (activeFilter === 'author_purchase') return book.book_origin === 'author_purchase';
     if (activeFilter === 'featured') {
@@ -39,8 +44,16 @@ export default function BooksPage({ books = [], bookCategories = [], handleReloa
     return book.categories && book.categories.some(cat => cat.id === activeFilter || cat.slug === activeFilter);
   }) : [];
 
+  if (import.meta.env.DEV) {
+    console.log('Error libros:', booksError);
+    console.log('Libros crudos desde Supabase:', books);
+    console.log('Libros visibles:', books ? books.filter(b => b.active !== false && b.visible !== false) : []);
+    console.log('Filtro activo libros:', activeFilter);
+    console.log('Libros filtrados:', filteredBooks);
+  }
+
   return (
-    <div className="section books-page-wrapper fade-in" style={{ backgroundColor: 'var(--crema-papel-light)', minHeight: '80vh', paddingTop: '100px' }}>
+    <div className="section books-page-wrapper fade-in" style={{ backgroundColor: 'var(--crema-papel-light)', minHeight: '80vh', paddingTop: '100px', paddingBottom: '80px' }}>
       <div className="container">
         <div className="section-title-wrapper" style={{ marginBottom: '32px' }}>
           <span className="section-subtitle">— CATÁLOGO —</span>
@@ -49,6 +62,22 @@ export default function BooksPage({ books = [], bookCategories = [], handleReloa
             Explora nuestra colección de obras seleccionadas, publicadas en formato físico y digital con la máxima dedicación editorial.
           </p>
         </div>
+
+        {booksError && (
+          <div style={{
+            padding: '12px 18px',
+            backgroundColor: '#FDF2F2',
+            borderLeft: '4px solid #F05252',
+            color: '#9B1C1C',
+            fontSize: '0.88rem',
+            fontFamily: 'var(--font-sans)',
+            marginBottom: '24px',
+            borderRadius: '4px',
+            textAlign: 'left'
+          }}>
+            <strong>Error cargando libros:</strong> {booksError}
+          </div>
+        )}
 
         {/* Filters/Tabs */}
         <div className="book-filters" style={{ marginBottom: '36px' }}>
@@ -84,10 +113,6 @@ export default function BooksPage({ books = [], bookCategories = [], handleReloa
         ) : (
           <div className="books-full-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '30px 24px' }}>
             {filteredBooks.map((book, index) => {
-              const genreText = book.categories && book.categories.length > 0 
-                ? book.categories.filter(c => c.type === 'genre').map(c => c.name).join(', ') 
-                : 'Literatura';
-
               const originText = book.book_origin === 'published_by_noveli' 
                 ? 'Publicado por Noveli' 
                 : 'Compra con el autor';
@@ -97,46 +122,41 @@ export default function BooksPage({ books = [], bookCategories = [], handleReloa
               else if (book.is_new || book.status?.toUpperCase() === 'NOVEDAD' || book.status?.toUpperCase() === 'DESTACADO') highlightText = book.status?.toUpperCase() || 'NOVEDAD';
               else if (book.is_coming_soon || book.status?.toLowerCase() === 'próximamente' || book.status?.toLowerCase() === 'proximamente') highlightText = 'PRÓXIMAMENTE';
 
-              let buyButton = null;
-              if (book.noveli_purchase_url) {
-                buyButton = (
+              const action = getBookAction(book);
+
+              let actionButton = null;
+              if (action.action === 'link') {
+                actionButton = (
                   <a 
-                    href={book.noveli_purchase_url} 
+                    href={action.url} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="btn btn-primary book-btn"
+                    className={`btn book-btn ${book.book_origin === 'published_by_noveli' ? 'btn-primary' : 'btn-secondary'}`}
                     style={{ width: '100%', padding: '8px 12px' }}
                   >
-                    Comprar en Noveli
-                  </a>
-                );
-              } else if (book.author_purchase_url) {
-                buyButton = (
-                  <a 
-                    href={book.author_purchase_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="btn btn-secondary book-btn"
-                    style={{ width: '100%', padding: '8px 12px' }}
-                  >
-                    Comprar con el autor
+                    {action.label}
                   </a>
                 );
               } else {
-                buyButton = (
-                  <a 
-                    href="#/contacto" 
+                actionButton = (
+                  <button 
+                    onClick={() => setSelectedBook(book)}
                     className="btn btn-secondary book-btn"
                     style={{ width: '100%', padding: '8px 12px' }}
+                    disabled={action.disabled}
                   >
-                    Ver detalles
-                  </a>
+                    {action.label}
+                  </button>
                 );
               }
 
               return (
                 <article key={book.id} className="book-card" style={{ width: '100%' }}>
-                  <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}>
+                  <div 
+                    onClick={() => setSelectedBook(book)}
+                    style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', cursor: 'pointer' }}
+                    title="Click para ver sinopsis/resumen"
+                  >
                     {/* Origin Badge */}
                     <span className="book-origin-badge" style={{ bottom: '18px' }}>{originText}</span>
                     
@@ -155,9 +175,9 @@ export default function BooksPage({ books = [], bookCategories = [], handleReloa
                   <h3 className="book-title" style={{ marginTop: '12px' }}>{book.title}</h3>
                   <p className="book-author" style={{ marginBottom: '12px' }}>{book.author}</p>
                   
-                  {/* Action Button visible on complete page */}
+                  {/* Action Button */}
                   <div style={{ width: '100%', marginTop: 'auto' }}>
-                    {buyButton}
+                    {actionButton}
                   </div>
                 </article>
               );
@@ -165,6 +185,14 @@ export default function BooksPage({ books = [], bookCategories = [], handleReloa
           </div>
         )}
       </div>
+
+      {/* Book details floating modal */}
+      {selectedBook && (
+        <BookDetailModal 
+          book={selectedBook} 
+          onClose={() => setSelectedBook(null)} 
+        />
+      )}
     </div>
   );
 }

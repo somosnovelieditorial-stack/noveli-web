@@ -1587,3 +1587,284 @@ label {
   box-shadow: var(--shadow-sm);
   z-index: 10;
 }
+
+/* Compact services carousel layout for Home Page */
+.services-carousel {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 12px 4px 24px;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-gold) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.services-carousel::-webkit-scrollbar {
+  height: 6px;
+}
+.services-carousel::-webkit-scrollbar-track {
+  background: rgba(117, 106, 93, 0.05);
+  border-radius: 4px;
+}
+.services-carousel::-webkit-scrollbar-thumb {
+  background: var(--accent-gold);
+  border-radius: 4px;
+}
+
+.service-card-compact {
+  flex: 0 0 280px; /* fixed size */
+  width: 280px;
+  height: 230px;
+  background-color: #FFF9EF; /* warm white crema */
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.service-card-compact:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-gold);
+  box-shadow: 0 8px 20px rgba(42, 15, 20, 0.06);
+}
+
+.service-card-compact .service-icon-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin-bottom: 12px;
+}
+
+.service-card-compact .service-category {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.service-card-compact .service-title {
+  font-family: var(--font-serif-title);
+  font-size: 1.05rem;
+  color: var(--wine-dark);
+  margin-bottom: 8px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.service-card-compact .service-desc {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--text-main);
+  margin-bottom: 12px;
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.service-card-compact .service-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid rgba(117, 106, 93, 0.08);
+}
+
+.service-card-compact .service-price-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--wine-dark);
+}
+
+.service-card-compact .service-action-link {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+
+.service-card-compact .service-action-link:hover {
+  color: var(--wine-dark);
+}
+
+/* Book Detail Modal Styles */
+.book-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(42, 15, 20, 0.6); /* wine tint overlay */
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.book-modal-container {
+  background-color: #FFF9EF; /* warm crema */
+  border: 1px solid var(--accent-gold);
+  border-radius: 4px;
+  box-shadow: 0 16px 40px rgba(42, 15, 20, 0.25);
+  width: 92vw;
+  max-width: 760px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  padding: 36px;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.book-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--wine-dark);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  opacity: 0.7;
+}
+
+.book-modal-close:hover {
+  opacity: 1;
+  color: var(--accent-gold);
+}
+
+.book-modal-grid {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+}
+
+@media (max-width: 600px) {
+  .book-modal-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .book-modal-cover-col {
+    display: flex;
+    justify-content: center;
+  }
+  .book-modal-container {
+    padding: 24px;
+  }
+}
+
+.book-modal-cover-col .book-cover-container {
+  width: 200px;
+  height: 300px;
+  box-shadow: 0 8px 24px rgba(42, 15, 20, 0.15);
+}
+
+.book-modal-info-col {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.book-modal-badge {
+  font-family: var(--font-sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 2px;
+  width: fit-content;
+  margin-bottom: 12px;
+}
+
+.book-modal-badge.badge-proximamente {
+  background-color: #F39C12;
+  color: #FFFFFF;
+}
+
+.book-modal-badge.badge-publicados {
+  background-color: var(--wine-dark);
+  color: #FFFFFF;
+}
+
+.book-modal-badge.badge-compra {
+  background-color: var(--accent-gold);
+  color: var(--wine-dark);
+}
+
+.book-modal-title {
+  font-family: var(--font-serif-title);
+  font-size: 1.8rem;
+  color: var(--wine-dark);
+  margin: 0 0 6px;
+  line-height: 1.25;
+}
+
+.book-modal-author {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0 0 16px;
+}
+
+.book-modal-divider {
+  height: 1px;
+  background-color: rgba(117, 106, 93, 0.15);
+  margin-bottom: 20px;
+}
+
+.book-modal-summary-title {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--accent-gold);
+  margin: 0 0 8px;
+}
+
+.book-modal-summary-text {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-main);
+  margin: 0;
+  white-space: pre-line;
+}
+
+.book-modal-action-wrapper {
+  margin-top: 24px;
+}
+
+.book-modal-btn {
+  display: inline-block;
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 12px 24px;
+  text-align: center;
+}
