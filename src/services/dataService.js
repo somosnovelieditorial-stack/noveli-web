@@ -233,19 +233,26 @@ export async function fetchWebsiteData() {
 
   // 2. Fetch services
   try {
+    const organizationId = '11111111-1111-1111-1111-111111111111';
     const { data: servicesData, error } = await supabase
       .from('website_services')
-      .select('id, title, short_description, full_description, price_from, currency, category, featured, visible_on_website, active, display_order, created_at')
+      .select('id, organization_id, title, short_description, full_description, price_from, currency, category, featured, visible_on_website, active, display_order, created_at')
+      .eq('organization_id', organizationId)
       .order('display_order', { ascending: true })
       .order('created_at', { ascending: true })
 
     if (error) throw error
+
+    if (import.meta.env.DEV) {
+      console.log('Servicios crudos desde Supabase:', servicesData);
+    }
 
     // Map and filter active/visible on website (programmatically to tolerate nulls)
     const activeServices = (servicesData || []).filter(row => row.active !== false && row.visible_on_website !== false)
 
     data.services = activeServices.map(row => ({
       id: row.id,
+      organization_id: row.organization_id,
       title: row.title || 'Servicio sin título',
       category: row.category || 'Edición',
       short_description: row.short_description || '',

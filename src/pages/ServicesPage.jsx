@@ -8,24 +8,19 @@ export default function ServicesPage({ services = [] }) {
 
   const categories = ['Todos', 'Editorial', 'Diseño', 'Producción', 'Marketing', 'Legal', 'Digitalización'];
 
-  // Handle category standardizations
-  const getNormalizedCategory = (cat = '') => {
-    const c = cat.toLowerCase();
-    if (c.includes('edición') || c.includes('editorial') || c.includes('corrección')) return 'editorial';
-    if (c.includes('diseño') || c.includes('arte') || c.includes('portadas') || c.includes('maquetación')) return 'diseño';
-    if (c.includes('impresión') || c.includes('producción') || c.includes('físico')) return 'producción';
-    if (c.includes('marketing') || c.includes('difusión') || c.includes('redes')) return 'marketing';
-    if (c.includes('legal') || c.includes('derechos') || c.includes('propiedad')) return 'legal';
-    if (c.includes('digital') || c.includes('epub') || c.includes('amazon') || c.includes('distribución')) return 'digitalización';
-    return c;
-  };
-
   const filteredServices = services ? services.filter(service => {
-    if (selectedCat === 'Todos') return true;
-    const normServiceCat = getNormalizedCategory(service.category);
-    const normSelectedCat = selectedCat.toLowerCase();
-    return normServiceCat === normSelectedCat;
+    if (String(selectedCat).toUpperCase() === 'TODOS') return true;
+    return String(service.category || '').toLowerCase().trim() === String(selectedCat).toLowerCase().trim();
   }) : [];
+
+  // Development logs
+  if (import.meta.env.DEV) {
+    const visibleServices = services ? services.filter(s => s.active !== false && s.visible_on_website !== false) : [];
+    console.log('Servicios crudos desde Supabase:', services);
+    console.log('Servicios visibles:', visibleServices);
+    console.log('Categoría seleccionada:', selectedCat);
+    console.log('Servicios filtrados:', filteredServices);
+  }
 
   const handleRequestService = (title) => {
     navigate('/contacto', { state: { selectedService: title } });
