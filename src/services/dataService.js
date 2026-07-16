@@ -9,6 +9,16 @@ export const defaultWebsiteSettings = {
   favicon_url: null
 };
 
+export const getLogoSrc = (settings, variant = 'dark') => {
+  if (!settings) return null;
+
+  if (variant === 'light') {
+    return settings.logo_light_url || settings.logo_url || settings.logo_dark_url || null;
+  }
+
+  return settings.logo_dark_url || settings.logo_url || settings.logo_light_url || null;
+};
+
 export const fallbackData = {
   settings: {
     hero_title: "Tu libro merece una edición a la altura de su historia.",
@@ -248,57 +258,38 @@ export async function fetchWebsiteData() {
 
   // 1. Fetch settings
   try {
-    const { data: settingsData, error } = await supabase
+    const { data: row, error } = await supabase
       .from('website_settings')
       .select('*')
       .eq('active', true)
+      .limit(1)
+      .maybeSingle()
 
     if (error) {
       console.error('Error cargando website_settings:', error);
       data.settings = { ...defaultWebsiteSettings, hero_title: fallbackData.settings.hero_title, hero_subtitle: fallbackData.settings.hero_subtitle };
-    } else if (!settingsData || settingsData.length === 0) {
-      console.log("website_settings returned empty array, using defaultWebsiteSettings");
+    } else if (!row) {
+      console.log("website_settings returned no row, using defaultWebsiteSettings");
       data.settings = { ...defaultWebsiteSettings, hero_title: fallbackData.settings.hero_title, hero_subtitle: fallbackData.settings.hero_subtitle };
     } else {
-      // Support both key-value and row-based structures
-      const isKeyValue = settingsData.some(row => row.key !== undefined && (row.value !== undefined || row.val !== undefined));
-      if (isKeyValue) {
-        settingsData.forEach(row => {
-          const key = (row.key || '').toLowerCase();
-          const val = row.value || row.val || '';
-          if (key === 'hero_title' || key === 'title' || key === 'titulo') {
-            data.settings.hero_title = val;
-          } else if (key === 'hero_subtitle' || key === 'subtitle' || key === 'subtitulo') {
-            data.settings.hero_subtitle = val;
-          } else if (key === 'email' || key === 'correo' || key === 'contact_email') {
-            data.links.email = val.replace('mailto:', '');
-          } else if (key === 'instagram') {
-            data.links.instagram = val;
-          } else if (key === 'contacto' || key === 'contact' || key === 'whatsapp') {
-            data.links.contact = val;
-          }
-        });
-      } else {
-        const row = settingsData[0]
-        data.settings.hero_title = row.hero_title || row.title || row.titulo || fallbackData.settings.hero_title
-        data.settings.hero_subtitle = row.hero_subtitle || row.subtitle || row.subtitulo || fallbackData.settings.hero_subtitle
-        data.settings.brand_name = row.brand_name || defaultWebsiteSettings.brand_name
-        data.settings.brand_subtitle = row.brand_subtitle || defaultWebsiteSettings.brand_subtitle
-        data.settings.logo_url = row.logo_url || defaultWebsiteSettings.logo_url
-        data.settings.logo_dark_url = row.logo_dark_url || defaultWebsiteSettings.logo_dark_url
-        data.settings.logo_light_url = row.logo_light_url || defaultWebsiteSettings.logo_light_url
-        data.settings.favicon_url = row.favicon_url || defaultWebsiteSettings.favicon_url
-        
-        // Populate contact info from settings if available
-        const email = row.contact_email || row.email || row.correo || row.correo_contacto
-        if (email) data.links.email = email.replace('mailto:', '')
+      data.settings.hero_title = row.hero_title || row.title || row.titulo || fallbackData.settings.hero_title
+      data.settings.hero_subtitle = row.hero_subtitle || row.subtitle || row.subtitulo || fallbackData.settings.hero_subtitle
+      data.settings.brand_name = row.brand_name || defaultWebsiteSettings.brand_name
+      data.settings.brand_subtitle = row.brand_subtitle || defaultWebsiteSettings.brand_subtitle
+      data.settings.logo_url = row.logo_url || defaultWebsiteSettings.logo_url
+      data.settings.logo_dark_url = row.logo_dark_url || defaultWebsiteSettings.logo_dark_url
+      data.settings.logo_light_url = row.logo_light_url || defaultWebsiteSettings.logo_light_url
+      data.settings.favicon_url = row.favicon_url || defaultWebsiteSettings.favicon_url
+      
+      // Populate contact info from settings if available
+      const email = row.contact_email || row.email || row.correo || row.correo_contacto
+      if (email) data.links.email = email.replace('mailto:', '')
 
-        const instagram = row.instagram || row.instagram_url
-        if (instagram) data.links.instagram = instagram
+      const instagram = row.instagram || row.instagram_url
+      if (instagram) data.links.instagram = instagram
 
-        const contact = row.contact_url || row.contact_link || row.contact || row.contacto || row.phone || row.telefono || row.whatsapp
-        if (contact) data.links.contact = contact
-      }
+      const contact = row.contact_url || row.contact_link || row.contact || row.contacto || row.phone || row.telefono || row.whatsapp
+      if (contact) data.links.contact = contact
     }
   } catch (err) {
     console.error('Error cargando website_settings:', err);

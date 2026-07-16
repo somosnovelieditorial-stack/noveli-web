@@ -94,8 +94,8 @@ export default function BookFilterDropdown({ activeFilter, onChange, bookCategor
         style={{
           width: '100%',
           height: '42px',
-          backgroundColor: isOpen ? 'var(--wine-dark)' : '#FFFDF9',
-          color: isOpen ? '#FFFDF9' : 'var(--wine-dark)',
+          backgroundColor: isOpen ? 'var(--wine-dark)' : '#FFFFFF',
+          color: isOpen ? '#FFFFFF' : 'var(--wine-dark)',
           border: '1px solid var(--accent-gold)',
           borderRadius: '4px',
           fontFamily: 'var(--font-sans)',
@@ -108,7 +108,7 @@ export default function BookFilterDropdown({ activeFilter, onChange, bookCategor
           alignItems: 'center',
           justifyContent: 'space-between',
           cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(42,15,20,0.06)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
           transition: 'all 0.3s ease'
         }}
       >
@@ -141,10 +141,10 @@ export default function BookFilterDropdown({ activeFilter, onChange, bookCategor
             top: '46px',
             left: 0,
             width: '100%',
-            backgroundColor: '#FFFDF9',
+            backgroundColor: '#FFFFFF',
             border: '1px solid var(--accent-gold)',
             borderRadius: '4px',
-            boxShadow: '0 8px 30px rgba(42,15,20,0.18)',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
             maxHeight: '380px',
             overflowY: 'auto',
             padding: '12px 0',

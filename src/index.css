@@ -1,25 +1,25 @@
 /* Approved Reference Mockup CSS Design System for Somos Noveli Editorial */
 
 :root {
-  --bg-color: #FAF6EC; /* Crema papel / blanco cálido base */
+  --bg-color: #FFFFFF; /* Blanco cálido base */
   --card-bg: #FFFFFF;
   --text-main: #333333; /* Gris tinta muy oscuro */
-  --text-title: #111111; /* Negro editorial */
-  --text-muted: #756A5D; /* Gris cálido */
+  --text-title: #050505; /* Negro editorial */
+  --text-muted: #555555; /* Gris texto suave */
   
   /* Mockup Palette */
-  --wine-dark: #2A0F14;
-  --wine-medium: #3A141B;
-  --wine-light: #4B1D25;
-  --crema-papel: #F6EFE3;
-  --crema-papel-dark: #EFE2CF;
-  --crema-papel-light: #FAF6EC;
+  --wine-dark: #050505; /* Negro principal */
+  --wine-medium: #0E0E0E; /* Negro editorial suave */
+  --wine-light: #1A1A1A; /* Negro editorial muy suave */
+  --crema-papel: #FFFFFF; /* Blanco principal */
+  --crema-papel-dark: #FAFAF7; /* Blanco cálido */
+  --crema-papel-light: #FFFFFF; /* Blanco principal */
   --accent-gold: #C7943A; /* Dorado editorial */
   --accent-gold-light: #D8A94B;
   --green-deep: #17352F; /* Verde profundo */
   --green-light: #1F473F;
-  --white-warm: #FFF9EF;
-  --border-color: #EFE2CF;
+  --white-warm: #FAFAF7; /* Blanco cálido / roto */
+  --border-color: #EAEAEA; /* Gris claro de borde */
 
   --shadow-sm: 0 4px 12px rgba(30, 27, 24, 0.02);
   --shadow-md: 0 10px 24px rgba(30, 27, 24, 0.04);
@@ -172,9 +172,9 @@ button, .btn {
   left: 0;
   width: 100%;
   z-index: 1000;
-  background-color: var(--crema-papel); /* Solid cream #F6EFE3 */
+  background-color: var(--crema-papel); /* Solid white */
   border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 2px 12px rgba(42, 15, 20, 0.04);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   transition: var(--transition-smooth);
 }
 
@@ -621,7 +621,7 @@ button, .btn {
   margin-bottom: 16px;
 }
 
-.circle-wine { background-color: rgba(42, 15, 20, 0.08); color: var(--wine-dark); }
+.circle-wine { background-color: rgba(14, 14, 14, 0.08); color: var(--wine-dark); }
 .circle-green { background-color: rgba(23, 53, 47, 0.08); color: var(--green-deep); }
 .circle-gold { background-color: rgba(199, 148, 58, 0.1); color: var(--accent-gold); }
 .circle-blue { background-color: rgba(30, 80, 150, 0.08); color: #1E5096; }
@@ -1407,7 +1407,7 @@ label {
 }
 
 .service-card-visual {
-  background-color: #FFF9EF; /* Warm white/crema #FFF9EF */
+  background-color: #FFFFFF; /* White */
   border: 1px solid var(--border-color);
   border-radius: 4px;
   overflow: hidden;
@@ -1442,13 +1442,13 @@ label {
 }
 
 .decor-editorial {
-  background: linear-gradient(135deg, #3a141b 0%, #2a0f14 100%);
+  background: linear-gradient(135deg, #0e0e0e 0%, #050505 100%);
   background-image: linear-gradient(rgba(255, 249, 239, 0.05) 1px, transparent 1px);
   background-size: 100% 20px;
 }
 
 .decor-diseno {
-  background: linear-gradient(135deg, #4b1d25 0%, #3a141b 100%);
+  background: linear-gradient(135deg, #1a1a1a 0%, #0e0e0e 100%);
   background-image: linear-gradient(to right, rgba(199, 148, 58, 0.1) 1px, transparent 1px),
                     linear-gradient(to bottom, rgba(199, 148, 58, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
@@ -1472,7 +1472,7 @@ label {
 }
 
 .decor-default {
-  background: linear-gradient(135deg, #2a0f14 0%, #17352f 100%);
+  background: linear-gradient(135deg, #050505 0%, #17352f 100%);
 }
 
 /* Superposed icon circle */
@@ -1483,7 +1483,7 @@ label {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background-color: #FFF9EF;
+  background-color: #FFFFFF;
   border: 2px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -1616,12 +1616,12 @@ label {
   flex: 0 0 280px; /* fixed size */
   width: 280px;
   height: 320px;
-  background-color: #FFFDF9;
+  background-color: #FFFFFF;
   border: 1px solid rgba(199, 148, 58, 0.15);
   border-radius: 4px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 12px rgba(42, 15, 20, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   transition: var(--transition-smooth);
   position: relative;
   overflow: hidden;
@@ -1630,7 +1630,7 @@ label {
 .service-card-compact:hover {
   transform: translateY(-4px);
   border-color: var(--accent-gold);
-  box-shadow: 0 8px 24px rgba(42, 15, 20, 0.1) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
 }
 
 .service-card-compact .service-action-link:hover {
@@ -1644,7 +1644,7 @@ label {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(42, 15, 20, 0.6); /* wine tint overlay */
+  background-color: rgba(14, 14, 14, 0.6); /* neutral dark tint overlay */
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -1654,10 +1654,10 @@ label {
 }
 
 .book-modal-container {
-  background-color: #FFF9EF; /* warm crema */
+  background-color: #FFFFFF; /* white */
   border: 1px solid var(--accent-gold);
   border-radius: 4px;
-  box-shadow: 0 16px 40px rgba(42, 15, 20, 0.25);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
   width: 92vw;
   max-width: 760px;
   max-height: 80vh;
@@ -1714,7 +1714,7 @@ label {
 .book-modal-cover-col .book-cover-container {
   width: 200px;
   height: 300px;
-  box-shadow: 0 8px 24px rgba(42, 15, 20, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .book-modal-info-col {
@@ -1804,7 +1804,7 @@ label {
 /* Dynamic Book Filter Dropdown Styles */
 .filter-dropdown-btn:hover {
   border-color: var(--accent-gold-light) !important;
-  box-shadow: 0 6px 16px rgba(42, 15, 20, 0.12) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
 }
 
 .filter-dropdown-menu::-webkit-scrollbar {
@@ -1895,13 +1895,13 @@ label {
 /* Elegant Grid Header Custom Adjustments */
 .btn-header-menu-toggle:hover {
   background-color: var(--wine-dark) !important;
-  color: #F6EFE3 !important;
+  color: #FFFFFF !important;
 }
 
 .btn-header-cta-dynamic:hover {
   background-color: var(--wine-dark) !important;
   border-color: var(--wine-dark) !important;
-  color: #F6EFE3 !important;
+  color: #FFFFFF !important;
 }
 
 @media (max-width: 768px) {
@@ -2180,5 +2180,20 @@ html, body {
 @media (max-width: 640px) {
   .brand-logo-img {
     max-height: 28px !important;
+  }
+}
+
+.site-logo-image {
+  display: block;
+  max-height: 34px !important;
+  width: auto !important;
+  max-width: 180px !important;
+  object-fit: contain !important;
+}
+
+@media (max-width: 640px) {
+  .site-logo-image {
+    max-height: 28px !important;
+    max-width: 140px !important;
   }
 }

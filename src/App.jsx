@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { HashRouter as Router, Routes, Route, NavLink, Link, useLocation } from 'react-router-dom'
-import { fetchWebsiteData, fallbackData, getBookCover, defaultWebsiteSettings } from './services/dataService'
+import { fetchWebsiteData, fallbackData, getBookCover, defaultWebsiteSettings, getLogoSrc } from './services/dataService'
 import HomePage from './pages/HomePage'
 import ServicesPage from './pages/ServicesPage'
 import BooksPage from './pages/BooksPage'
@@ -36,13 +36,14 @@ function AppContent() {
   const { services, books, sections, links, footerSettings, footerGallery, settings } = data || {};
   const websiteSettings = settings || defaultWebsiteSettings;
 
-  const getLogoSrc = (variant = 'dark') => {
-    if (!websiteSettings) return null;
-    if (variant === 'light') {
-      return websiteSettings.logo_light_url || websiteSettings.logo_url || null;
-    }
-    return websiteSettings.logo_dark_url || websiteSettings.logo_url || null;
-  };
+  // Shared getLogoSrc utility is imported from dataService.js
+  const logoSrc = getLogoSrc(websiteSettings, 'dark');
+  const logoLightSrc = getLogoSrc(websiteSettings, 'light');
+
+  if (import.meta.env.DEV) {
+    console.log('Website settings:', websiteSettings);
+    console.log('Logo URL detectada:', logoSrc);
+  }
 
   const fs = footerSettings || {
     contact_title: "Contáctanos",
@@ -115,7 +116,7 @@ function AppContent() {
     <div className="app-routing-wrapper">
       
       {/* 1. Legible Solid Cream Header (#F6EFE3) */}
-      <header className={headerClass} style={{ position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 4px 20px rgba(42, 15, 20, 0.05)', backdropFilter: 'blur(8px)', backgroundColor: '#F6EFE3', borderBottom: '1px solid rgba(199, 148, 58, 0.15)', height: '68px', display: 'flex', alignItems: 'center' }}>
+      <header className={headerClass} style={{ position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)', backdropFilter: 'blur(8px)', backgroundColor: '#FFFFFF', borderBottom: '1px solid rgba(199, 148, 58, 0.15)', height: '68px', display: 'flex', alignItems: 'center' }}>
         <div className="container" style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', width: '100%', padding: '0 20px' }}>
           
           {/* Izquierda: Botón MENÚ */}
@@ -150,12 +151,11 @@ function AppContent() {
           {/* Centro: Logo */}
           <div style={{ justifySelf: 'center' }}>
             <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {getLogoSrc('dark') ? (
+              {logoSrc ? (
                 <img 
-                  src={getLogoSrc('dark')} 
-                  alt={websiteSettings?.brand_name || "NOVELI"} 
-                  className="brand-logo-img brand-logo-dark"
-                  style={{ maxHeight: '36px', width: 'auto', objectFit: 'contain', display: 'block' }}
+                  src={logoSrc} 
+                  alt={websiteSettings?.brand_name || 'Noveli Editorial'} 
+                  className="site-logo-image brand-logo-dark"
                 />
               ) : (
                 <div className="logo-text" style={{ color: 'var(--wine-dark)', margin: 0 }}>
@@ -215,12 +215,11 @@ function AppContent() {
             <div className="footer-col" style={{ gridColumn: 'span 2' }}>
               <div className="footer-logo-wrapper" style={{ marginBottom: '12px' }}>
                 <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'inline-block' }}>
-                  {getLogoSrc('light') ? (
+                  {logoLightSrc ? (
                     <img 
-                      src={getLogoSrc('light')} 
-                      alt={websiteSettings?.brand_name || "NOVELI"} 
-                      className="brand-logo-img brand-logo-light"
-                      style={{ maxHeight: '36px', width: 'auto', objectFit: 'contain', display: 'block' }}
+                      src={logoLightSrc} 
+                      alt={websiteSettings?.brand_name || 'Noveli Editorial'} 
+                      className="site-logo-image brand-logo-light"
                     />
                   ) : (
                     <div className="logo-text footer-logo" style={{ color: '#FFFFFF', margin: 0 }}>

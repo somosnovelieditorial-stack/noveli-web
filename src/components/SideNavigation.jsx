@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
+import { getLogoSrc } from '../services/dataService';
 
 export default function SideNavigation({ isOpen, onClose, links = {}, settings = {} }) {
   const panelRef = useRef(null);
@@ -53,7 +54,7 @@ export default function SideNavigation({ isOpen, onClose, links = {}, settings =
         left: 0,
         width: '100vw',
         height: '100vh',
-        backgroundColor: 'rgba(42, 15, 20, 0.65)',
+        backgroundColor: 'rgba(14, 14, 14, 0.65)',
         backdropFilter: 'blur(4px)',
         zIndex: 9999,
         display: 'flex',
@@ -69,7 +70,7 @@ export default function SideNavigation({ isOpen, onClose, links = {}, settings =
           width: '85vw',
           maxWidth: '360px',
           height: '100%',
-          backgroundColor: '#2A0F14', /* premium wine dark */
+          backgroundColor: '#0E0E0E', /* premium editorial black */
           borderRight: '1px solid var(--accent-gold)',
           padding: '40px 30px',
           display: 'flex',
@@ -105,16 +106,12 @@ export default function SideNavigation({ isOpen, onClose, links = {}, settings =
 
         {/* Logo */}
         <div className="logo-wrapper-sidenav" style={{ marginBottom: '40px' }}>
-          {settings?.logo_dark_url || settings?.logo_url ? (
+          {getLogoSrc(settings, 'dark') ? (
             <img 
-              src={settings.logo_dark_url || settings.logo_url} 
-              alt={settings.brand_name || "NOVELI"} 
-              className="brand-logo-img brand-logo-sidenav"
+              src={getLogoSrc(settings, 'dark')} 
+              alt={settings?.brand_name || 'Noveli Editorial'} 
+              className="site-logo-image brand-logo-sidenav"
               style={{
-                maxHeight: '36px',
-                width: 'auto',
-                objectFit: 'contain',
-                display: 'block',
                 filter: 'brightness(0) invert(1)' /* Light color on dark background (Rule 9) */
               }}
             />
