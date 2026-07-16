@@ -293,11 +293,14 @@ export async function fetchWebsiteData() {
       console.warn("Failed to fetch website_book_category_links:", linkErr)
     }
 
-    // 3c. Fetch books (only active/visible, ordered featured first, then display_order, then created_at)
+    // 3c. Fetch books (only active/visible, ordered display_order, then created_at)
+    const organizationId = '11111111-1111-1111-1111-111111111111';
     const { data: booksData, error } = await supabase
       .from('website_books')
-      .select('id, title, author, cover_url, visible, active, book_origin, purchase_type, author_purchase_url, noveli_purchase_url, is_featured, is_new, is_coming_soon, display_order, created_at')
-      .order('is_featured', { ascending: false })
+      .select('id, organization_id, title, author, description, cover_url, cover_image_url, active, visible, book_origin, purchase_type, author_purchase_url, noveli_purchase_url, is_featured, is_new, is_coming_soon, display_order, created_at')
+      .eq('organization_id', organizationId)
+      .neq('active', false)
+      .neq('visible', false)
       .order('display_order', { ascending: true })
       .order('created_at', { ascending: false })
 
@@ -315,12 +318,12 @@ export async function fetchWebsiteData() {
 
       return {
         id: row.id,
+        organization_id: row.organization_id,
         title: row.title || row.titulo || row.nombre || 'Libro sin título',
         author: row.author || row.autor || 'Autor desconocido',
-        description: row.description || null, // Tolerates null/missing column
+        description: row.description || '',
         cover_url: row.cover_url || '',
-        cover_image_url: row.cover_image_url || null, // Tolerates null/missing column
-        image_url: row.image_url || null, // Tolerates null/missing column
+        cover_image_url: row.cover_image_url || '',
         visible: row.visible,
         active: row.active,
         book_origin: row.book_origin || 'published_by_noveli',
@@ -341,7 +344,12 @@ export async function fetchWebsiteData() {
     } else {
       data.bookCategories = []
     }
+
+    if (import.meta.env.DEV) {
+      console.log('Libros cargados desde Supabase:', data.books)
+    }
   } catch (err) {
+    console.error("Error al cargar libros desde Supabase:", err)
     console.warn("Failed to fetch website_books, using fallback:", err.message || err)
   }
 
@@ -403,7 +411,7 @@ export async function fetchWebsiteData() {
 
 export function getBookCover(book) {
   if (!book) return null
-  return book.cover_url || book.cover_image_url || book.image_url || null
+  return book.cover_image_url || book.cover_url || null
 }
 
 export function formatServicePrice(price, currency) {
