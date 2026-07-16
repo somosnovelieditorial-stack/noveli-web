@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { HashRouter as Router, Routes, Route, NavLink, Link, useLocation } from 'react-router-dom'
-import { fetchWebsiteData, fallbackData, getBookCover } from './services/dataService'
+import { fetchWebsiteData, fallbackData, getBookCover, defaultWebsiteSettings } from './services/dataService'
 import HomePage from './pages/HomePage'
 import ServicesPage from './pages/ServicesPage'
 import BooksPage from './pages/BooksPage'
@@ -8,6 +8,7 @@ import NosotrosPage from './pages/NosotrosPage'
 import ContactPage from './pages/ContactPage'
 import BookCover from './components/BookCover'
 import SideNavigation from './components/SideNavigation'
+import ErrorBoundary from './components/ErrorBoundary'
 import './App.css'
 
 // Inline SVG Icon Components
@@ -26,22 +27,32 @@ const InstagramIcon = () => (
   </svg>
 )
 
-// Scroll to Top component to reset scroll position on page change
-function ScrollToTop() {
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-
-  return null;
-}
-
 function AppContent() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(fallbackData);
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const location = useLocation();
+
+  const { services, books, sections, links, footerSettings, footerGallery, settings } = data || {};
+  const websiteSettings = settings || defaultWebsiteSettings;
+
+  const getLogoSrc = (variant = 'dark') => {
+    if (!websiteSettings) return null;
+    if (variant === 'light') {
+      return websiteSettings.logo_light_url || websiteSettings.logo_url || null;
+    }
+    return websiteSettings.logo_dark_url || websiteSettings.logo_url || null;
+  };
+
+  const fs = footerSettings || {
+    contact_title: "Contáctanos",
+    contact_email: "hola@somosnoveli.cl",
+    contact_location: "Santiago, Chile",
+    contact_description: "Acompañamos tu proceso de escritura y autopublicación de principio a fin.",
+    instagram_title: "Síguenos en Instagram",
+    instagram_url: "https://instagram.com/somosnoveli",
+    instagram_enabled: true
+  };
 
   const loadData = async (showSpinner = false) => {
     if (showSpinner) setLoading(true);
@@ -61,26 +72,35 @@ function AppContent() {
     loadData();
   }, []);
 
+  // Update website metadata (Title and Favicon) dynamically when data resolves
   useEffect(() => {
-    if (data && data.settings) {
-      if (data.settings.brand_name) {
-        document.title = `${data.settings.brand_name} | Editorial Independiente`;
+    const brand = websiteSettings?.brand_name || defaultWebsiteSettings.brand_name;
+    document.title = `${brand} | Editorial Independiente`;
+    
+    const favUrl = websiteSettings?.favicon_url;
+    if (favUrl) {
+      let link = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
       }
-      if (data.settings.favicon_url) {
-        let link = document.querySelector("link[rel~='icon']");
-        if (!link) {
-          link = document.createElement('link');
-          link.rel = 'icon';
-          document.getElementsByTagName('head')[0].appendChild(link);
-        }
-        link.href = data.settings.favicon_url;
-      }
+      link.href = favUrl;
     }
-  }, [data]);
+  }, [websiteSettings]);
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   const handleReload = () => {
     loadData(true);
   };
+
+  // Render header dynamically based on route (or always cream background #F6EFE3 to ensure legibility)
+  const isHome = location.pathname === '/';
+  const headerClass = `header header-cream-solid`;
 
   if (loading) {
     return (
@@ -91,39 +111,8 @@ function AppContent() {
     );
   }
 
-  const { services, books, sections, links, footerSettings, footerGallery, settings } = data;
-  const siteSettings = settings || fallbackData.settings;
-
-  const fs = footerSettings || {
-    contact_title: "Contáctanos",
-    contact_email: "hola@somosnoveli.cl",
-    contact_location: "Santiago, Chile",
-    contact_description: "Acompañamos tu proceso de escritura y autopublicación de principio a fin.",
-    instagram_title: "Síguenos en Instagram",
-    instagram_url: "https://instagram.com/somosnoveli",
-    instagram_enabled: true
-  };
-
-  // Dynamically update favicon if configured
-  useEffect(() => {
-    if (siteSettings?.favicon_url) {
-      let link = document.querySelector("link[rel~='icon']");
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.getElementsByTagName('head')[0].appendChild(link);
-      }
-      link.href = siteSettings.favicon_url;
-    }
-  }, [siteSettings?.favicon_url]);
-
-  // Render header dynamically based on route (or always cream background #F6EFE3 to ensure legibility)
-  const isHome = location.pathname === '/';
-  const headerClass = `header header-cream-solid`;
-
   return (
     <div className="app-routing-wrapper">
-      <ScrollToTop />
       
       {/* 1. Legible Solid Cream Header (#F6EFE3) */}
       <header className={headerClass} style={{ position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 4px 20px rgba(42, 15, 20, 0.05)', backdropFilter: 'blur(8px)', backgroundColor: '#F6EFE3', borderBottom: '1px solid rgba(199, 148, 58, 0.15)', height: '68px', display: 'flex', alignItems: 'center' }}>
@@ -161,17 +150,17 @@ function AppContent() {
           {/* Centro: Logo */}
           <div style={{ justifySelf: 'center' }}>
             <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {siteSettings?.logo_dark_url || siteSettings?.logo_url ? (
+              {getLogoSrc('dark') ? (
                 <img 
-                  src={siteSettings.logo_dark_url || siteSettings.logo_url} 
-                  alt={siteSettings.brand_name || "NOVELI"} 
+                  src={getLogoSrc('dark')} 
+                  alt={websiteSettings?.brand_name || "NOVELI"} 
                   className="brand-logo-img brand-logo-dark"
                   style={{ maxHeight: '36px', width: 'auto', objectFit: 'contain', display: 'block' }}
                 />
               ) : (
                 <div className="logo-text" style={{ color: 'var(--wine-dark)', margin: 0 }}>
-                  {siteSettings?.brand_name || 'NOVELI'}
-                  <span className="logo-sub" style={{ color: 'var(--text-muted)' }}>{siteSettings?.brand_subtitle || ' — EDITORIAL'}</span>
+                  {websiteSettings?.brand_name || 'NOVELI'}
+                  <span className="logo-sub" style={{ color: 'var(--text-muted)' }}>{websiteSettings?.brand_subtitle || ' — EDITORIAL'}</span>
                   <svg className="logo-leaf" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '5px', display: 'inline-block', verticalAlign: 'middle' }}>
                     <path d="M2 22C2 22 10 22 16 16C21 11 20 4 20 4C20 4 13 3 8 8C2 14 2 22 2 22Z" fill="var(--accent-gold)" />
                     <path d="M12 12L2 22" />
@@ -226,17 +215,17 @@ function AppContent() {
             <div className="footer-col" style={{ gridColumn: 'span 2' }}>
               <div className="footer-logo-wrapper" style={{ marginBottom: '12px' }}>
                 <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'inline-block' }}>
-                  {siteSettings?.logo_light_url || siteSettings?.logo_url ? (
+                  {getLogoSrc('light') ? (
                     <img 
-                      src={siteSettings.logo_light_url || siteSettings.logo_url} 
-                      alt={siteSettings.brand_name || "NOVELI"} 
+                      src={getLogoSrc('light')} 
+                      alt={websiteSettings?.brand_name || "NOVELI"} 
                       className="brand-logo-img brand-logo-light"
                       style={{ maxHeight: '36px', width: 'auto', objectFit: 'contain', display: 'block' }}
                     />
                   ) : (
                     <div className="logo-text footer-logo" style={{ color: '#FFFFFF', margin: 0 }}>
-                      {siteSettings?.brand_name || 'NOVELI'}
-                      <span className="logo-sub">{siteSettings?.brand_subtitle || ' — EDITORIAL'}</span>
+                      {websiteSettings?.brand_name || 'NOVELI'}
+                      <span className="logo-sub">{websiteSettings?.brand_subtitle || ' — EDITORIAL'}</span>
                       <svg className="logo-leaf" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '5px', display: 'inline-block', verticalAlign: 'middle' }}>
                         <path d="M2 22C2 22 10 22 16 16C21 11 20 4 20 4C20 4 13 3 8 8C2 14 2 22 2 22Z" fill="var(--accent-gold)" />
                         <path d="M12 12L2 22" />
@@ -382,7 +371,7 @@ function AppContent() {
         isOpen={sideNavOpen} 
         onClose={() => setSideNavOpen(false)} 
         links={links} 
-        settings={siteSettings}
+        settings={websiteSettings}
       />
     </div>
   );
@@ -390,9 +379,11 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <AppContent />
+      </Router>
+    </ErrorBoundary>
   );
 }
 

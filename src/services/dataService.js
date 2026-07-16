@@ -1,5 +1,14 @@
 import { supabase } from '../lib/supabaseClient'
 
+export const defaultWebsiteSettings = {
+  brand_name: 'NOVELI',
+  brand_subtitle: 'EDITORIAL',
+  logo_url: null,
+  logo_dark_url: null,
+  logo_light_url: null,
+  favicon_url: null
+};
+
 export const fallbackData = {
   settings: {
     hero_title: "Tu libro merece una edición a la altura de su historia.",
@@ -244,9 +253,13 @@ export async function fetchWebsiteData() {
       .select('*')
       .eq('active', true)
 
-    if (error) throw error
-
-    if (settingsData && settingsData.length > 0) {
+    if (error) {
+      console.error('Error cargando website_settings:', error);
+      data.settings = { ...defaultWebsiteSettings, hero_title: fallbackData.settings.hero_title, hero_subtitle: fallbackData.settings.hero_subtitle };
+    } else if (!settingsData || settingsData.length === 0) {
+      console.log("website_settings returned empty array, using defaultWebsiteSettings");
+      data.settings = { ...defaultWebsiteSettings, hero_title: fallbackData.settings.hero_title, hero_subtitle: fallbackData.settings.hero_subtitle };
+    } else {
       // Support both key-value and row-based structures
       const isKeyValue = settingsData.some(row => row.key !== undefined && (row.value !== undefined || row.val !== undefined));
       if (isKeyValue) {
@@ -269,12 +282,12 @@ export async function fetchWebsiteData() {
         const row = settingsData[0]
         data.settings.hero_title = row.hero_title || row.title || row.titulo || fallbackData.settings.hero_title
         data.settings.hero_subtitle = row.hero_subtitle || row.subtitle || row.subtitulo || fallbackData.settings.hero_subtitle
-        data.settings.brand_name = row.brand_name || fallbackData.settings.brand_name
-        data.settings.brand_subtitle = row.brand_subtitle || fallbackData.settings.brand_subtitle
-        data.settings.logo_url = row.logo_url || fallbackData.settings.logo_url
-        data.settings.logo_dark_url = row.logo_dark_url || fallbackData.settings.logo_dark_url
-        data.settings.logo_light_url = row.logo_light_url || fallbackData.settings.logo_light_url
-        data.settings.favicon_url = row.favicon_url || fallbackData.settings.favicon_url
+        data.settings.brand_name = row.brand_name || defaultWebsiteSettings.brand_name
+        data.settings.brand_subtitle = row.brand_subtitle || defaultWebsiteSettings.brand_subtitle
+        data.settings.logo_url = row.logo_url || defaultWebsiteSettings.logo_url
+        data.settings.logo_dark_url = row.logo_dark_url || defaultWebsiteSettings.logo_dark_url
+        data.settings.logo_light_url = row.logo_light_url || defaultWebsiteSettings.logo_light_url
+        data.settings.favicon_url = row.favicon_url || defaultWebsiteSettings.favicon_url
         
         // Populate contact info from settings if available
         const email = row.contact_email || row.email || row.correo || row.correo_contacto
@@ -288,7 +301,8 @@ export async function fetchWebsiteData() {
       }
     }
   } catch (err) {
-    console.warn("Failed to fetch website_settings, using fallback:", err.message || err)
+    console.error('Error cargando website_settings:', err);
+    data.settings = { ...defaultWebsiteSettings, hero_title: fallbackData.settings.hero_title, hero_subtitle: fallbackData.settings.hero_subtitle };
   }
 
   // 2. Fetch services
