@@ -1,29 +1,12 @@
 import { useState } from 'react';
 import BookCover from '../components/BookCover';
 import BookDetailModal from '../components/BookDetailModal';
+import BookFilterDropdown from '../components/BookFilterDropdown';
 import { getBookCover, getBookAction } from '../services/dataService';
 
 export default function BooksPage({ books = [], bookCategories = [], booksError = null, handleReload }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedBook, setSelectedBook] = useState(null);
-
-  // Build the catalog filter options dynamically and in UPPERCASE
-  const filterOptions = [
-    { id: 'all', label: 'GENERAL' },
-    { id: 'published_by_noveli', label: 'PUBLICADOS POR NOVELI' },
-    { id: 'author_purchase', label: 'COMPRA CON EL AUTOR' },
-  ];
-
-  if (bookCategories && bookCategories.length > 0) {
-    const genres = bookCategories.filter(cat => cat.type === 'genre');
-    genres.forEach(genre => {
-      filterOptions.push({ id: genre.id, label: genre.name.toUpperCase() });
-    });
-  }
-
-  filterOptions.push({ id: 'featured', label: 'DESTACADOS' });
-  filterOptions.push({ id: 'new', label: 'NOVEDADES' });
-  filterOptions.push({ id: 'coming_soon', label: 'PRÓXIMAMENTE' });
 
   const filteredBooks = books ? books.filter(book => {
     // Client-side active and visible enforcement
@@ -79,22 +62,30 @@ export default function BooksPage({ books = [], bookCategories = [], booksError 
           </div>
         )}
 
-        {/* Filters/Tabs */}
-        <div className="book-filters" style={{ marginBottom: '36px' }}>
-          {filterOptions.map(opt => (
-            <button 
-              key={opt.id} 
-              className={`filter-btn ${activeFilter === opt.id ? 'active' : ''}`}
-              onClick={() => setActiveFilter(opt.id)}
-            >
-              {opt.label}
-            </button>
-          ))}
+        {/* Dynamic grouped filter dropdown */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginBottom: '36px' }}>
+          <BookFilterDropdown 
+            activeFilter={activeFilter} 
+            onChange={setActiveFilter} 
+            bookCategories={bookCategories} 
+          />
           {import.meta.env.DEV && (
             <button 
               className="filter-btn reload-btn" 
               onClick={handleReload}
-              style={{ borderColor: 'var(--accent-gold)', color: 'var(--accent-gold)', fontWeight: 'bold' }}
+              style={{ 
+                height: '42px', 
+                border: '1px solid var(--accent-gold)', 
+                borderRadius: '4px', 
+                color: 'var(--accent-gold)', 
+                background: 'none', 
+                padding: '0 16px', 
+                fontWeight: 'bold', 
+                cursor: 'pointer', 
+                zIndex: 100, 
+                fontSize: '0.8rem', 
+                letterSpacing: '0.05em' 
+              }}
             >
               🔄 RECARGAR
             </button>

@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import BookCover from '../components/BookCover';
 import BookDetailModal from '../components/BookDetailModal';
+import ServiceCard from '../components/ServiceCard';
+import BookFilterDropdown from '../components/BookFilterDropdown';
 import { getBookCover, formatServicePrice, getBookAction } from '../services/dataService';
 
 const getDecorClass = (category = '') => {
@@ -161,24 +163,6 @@ export default function HomePage({ data, handleReload }) {
     }
   };
 
-  // Build the catalog filter options dynamically and in UPPERCASE to match the mockup
-  const filterOptions = [
-    { id: 'all', label: 'GENERAL' },
-    { id: 'published_by_noveli', label: 'PUBLICADOS POR NOVELI' },
-    { id: 'author_purchase', label: 'COMPRA CON EL AUTOR' },
-  ];
-
-  if (bookCategories && bookCategories.length > 0) {
-    const genres = bookCategories.filter(cat => cat.type === 'genre');
-    genres.forEach(genre => {
-      filterOptions.push({ id: genre.id, label: genre.name.toUpperCase() });
-    });
-  }
-
-  filterOptions.push({ id: 'featured', label: 'DESTACADOS' });
-  filterOptions.push({ id: 'new', label: 'NOVEDADES' });
-  filterOptions.push({ id: 'coming_soon', label: 'PRÓXIMAMENTE' });
-
   const filteredBooks = books ? books.filter(book => {
     if (activeFilter === 'all') return true;
     if (activeFilter === 'published_by_noveli') return book.book_origin === 'published_by_noveli';
@@ -231,11 +215,10 @@ export default function HomePage({ data, handleReload }) {
     <div className="fade-in">
       {/* 2. Hero Section */}
       {(!heroSettings || heroSettings.active !== false) && (() => {
-        const heroStyle = {};
+        // Setup background image style for right visual if background_image_url exists
+        const rightVisualStyle = {};
         if (heroSettings?.background_image_url) {
-          heroStyle.backgroundImage = `url(${heroSettings.background_image_url})`;
-          heroStyle.backgroundSize = 'cover';
-          heroStyle.backgroundPosition = 'center';
+          rightVisualStyle.backgroundImage = `url(${heroSettings.background_image_url})`;
         }
 
         const renderButton = (text, url, className, id) => {
@@ -247,8 +230,27 @@ export default function HomePage({ data, handleReload }) {
           return <Link to={url} className={className} id={id}>{text}</Link>;
         };
 
+        // Determine the target book to show
+        let targetBook = null;
+        if (heroSettings?.featured_book_id) {
+          targetBook = books?.find(b => b.id === heroSettings.featured_book_id);
+        }
+        
+        if (!targetBook) {
+          // Find first featured book
+          targetBook = books?.find(b => b.active !== false && b.visible !== false && (b.is_featured === true || b.featured === true));
+        }
+
+        const featuredBookCover = targetBook ? getBookCover(targetBook) : null;
+        const sideImageUrl = heroSettings?.side_image_url || '';
+        const backgroundImage = heroSettings?.background_image_url || '';
+
+        // Validations for same images
+        const isSideSameAsBackground = sideImageUrl && backgroundImage && sideImageUrl === backgroundImage;
+        const isSideSameAsCover = sideImageUrl && featuredBookCover && sideImageUrl === featuredBookCover;
+
         return (
-          <section id="inicio" className="hero-section" style={heroStyle}>
+          <section id="inicio" className="hero-section">
             <div className="hero-grid-container">
               <div className="hero-left-content">
                 <span className="hero-badge">{heroSettings?.eyebrow || "Somos Noveli Editorial"}</span>
@@ -322,58 +324,61 @@ export default function HomePage({ data, handleReload }) {
                 </div>
               </div>
               
-              <div className="hero-right-visual">
-                <div className="hero-books-showcase">
-                  {heroSettings?.show_featured_book && heroSettings?.featured_book_id ? (
-                    (() => {
-                      const featuredBook = books?.find(b => b.id === heroSettings.featured_book_id);
-                      if (featuredBook) {
-                        return (
-                          <div className="hero-showcase-book book-0 cursor-pointer" style={{ transform: 'scale(1.15)', margin: '0 auto' }} onClick={() => setSelectedBook(featuredBook)}>
-                            <BookCover 
-                              title={featuredBook.title} 
-                              author={featuredBook.author} 
-                              coverUrl={getBookCover(featuredBook)} 
-                              index={0} 
-                            />
-                          </div>
-                        );
-                      }
-                      return null;
-                    })()
-                  ) : heroSettings?.side_image_url ? (
-                    <div className="hero-side-custom-image" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <img src={heroSettings.side_image_url} style={{ maxWidth: '105%', maxHeight: '420px', borderRadius: '8px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', objectFit: 'cover' }} alt="Visual" />
-                    </div>
-                  ) : (
-                    books && books.slice(0, 3).length > 0 ? (
-                      books.slice(0, 3).map((book, index) => (
-                        <div key={book.id} className={`hero-showcase-book book-${index} cursor-pointer`} onClick={() => setSelectedBook(book)}>
-                          <BookCover 
-                            title={book.title} 
-                            author={book.author} 
-                            coverUrl={getBookCover(book)} 
-                            index={index} 
+              <div className="hero-right-visual" style={rightVisualStyle}>
+                <div className="hero-books-showcase" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                  {(() => {
+                    const hasExplicitBook = !!heroSettings?.featured_book_id;
+                    const isDifferentBook = hasExplicitBook && !isSideSameAsCover;
+                    
+                    if (sideImageUrl && !isSideSameAsBackground && !isDifferentBook) {
+                      // Show side image as the main protagonist
+                      return (
+                        <div className="hero-side-custom-image" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <img 
+                            src={sideImageUrl} 
+                            style={{ maxWidth: '90%', maxHeight: '420px', borderRadius: '8px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', objectFit: 'cover' }} 
+                            alt="Visual Editorial" 
                           />
                         </div>
-                      ))
-                    ) : (
-                      [
-                        { title: "Fragmentos de lo que fuimos", author: "A.M." },
-                        { title: "Besos con sabor a sal", author: "Vale Barrios" },
-                        { title: "Bajo el cielo que callamos", author: "Daniela Torres" }
-                      ].map((book, index) => (
-                        <div key={index} className={`hero-showcase-book book-${index}`}>
+                      );
+                    } else if (targetBook) {
+                      // Show book cover as the main protagonist
+                      return (
+                        <div 
+                          className="hero-showcase-book book-0 cursor-pointer" 
+                          style={{ transform: 'scale(1.15)', margin: '0 auto', position: 'relative' }} 
+                          onClick={() => setSelectedBook(targetBook)}
+                        >
                           <BookCover 
-                            title={book.title} 
-                            author={book.author} 
+                            title={targetBook.title} 
+                            author={targetBook.author} 
+                            coverUrl={featuredBookCover} 
+                            index={0} 
+                          />
+                        </div>
+                      );
+                    } else {
+                      // Fallback: show generic cover
+                      return (
+                        <div 
+                          className="hero-showcase-book book-0 cursor-pointer" 
+                          style={{ transform: 'scale(1.15)', margin: '0 auto', position: 'relative' }} 
+                          onClick={() => setSelectedBook({ 
+                            title: "Letras y Voces", 
+                            author: "Noveli Editorial", 
+                            short_description: "Una portada decorativa para dar la bienvenida al mundo de la edición." 
+                          })}
+                        >
+                          <BookCover 
+                            title="Letras y Voces" 
+                            author="Noveli Editorial" 
                             coverUrl="" 
-                            index={index} 
+                            index={0} 
                           />
                         </div>
-                      ))
-                    )
-                  )}
+                      );
+                    }
+                  })()}
                 </div>
               </div>
             </div>
@@ -410,41 +415,14 @@ export default function HomePage({ data, handleReload }) {
                   Aún no hay servicios visibles.
                 </p>
               ) : (
-                homeServices.map((service, index) => {
-                  const icon = getServiceIcon(service.icon_name, index);
-                  const iconColors = ['circle-wine', 'circle-green', 'circle-gold', 'circle-blue', 'circle-purple'];
-                  const iconColorClass = iconColors[index % iconColors.length];
-
-                  return (
-                    <Link 
-                      key={service.id} 
-                      to={`/contacto?servicio=${encodeURIComponent(service.title)}`}
-                      className="service-card-compact"
-                      style={{ textDecoration: 'none', color: 'inherit' }}
-                    >
-                      <div className={`service-icon-inline ${iconColorClass}`}>
-                        {icon}
-                      </div>
-                      <span className="service-category">
-                        {service.category}
-                      </span>
-                      <h3 className="service-title" title={service.title}>
-                        {service.title}
-                      </h3>
-                      <p className="service-desc">
-                        {service.short_description || service.description}
-                      </p>
-                      <div className="service-footer">
-                        <span className="service-price-value">
-                          {formatServicePrice(service.price_from, service.currency)}
-                        </span>
-                        <span className="service-action-link">
-                          Ver servicio ➔
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })
+                homeServices.map((service, index) => (
+                  <ServiceCard 
+                    key={service.id}
+                    service={service}
+                    index={index}
+                    variant="compact"
+                  />
+                ))
               )}
             </div>
 
@@ -474,22 +452,30 @@ export default function HomePage({ data, handleReload }) {
             <h2 className="section-title">Historias que inspiran</h2>
           </div>
           
-          {/* Filters/Tabs */}
-          <div className="book-filters">
-            {filterOptions.map(opt => (
-              <button 
-                key={opt.id} 
-                className={`filter-btn ${activeFilter === opt.id ? 'active' : ''}`}
-                onClick={() => setActiveFilter(opt.id)}
-              >
-                {opt.label}
-              </button>
-            ))}
+          {/* Dynamic grouped filter dropdown */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginBottom: '28px' }}>
+            <BookFilterDropdown 
+              activeFilter={activeFilter} 
+              onChange={setActiveFilter} 
+              bookCategories={bookCategories} 
+            />
             {import.meta.env.DEV && (
               <button 
                 className="filter-btn reload-btn" 
                 onClick={handleReload}
-                style={{ borderColor: 'var(--accent-gold)', color: 'var(--accent-gold)', fontWeight: 'bold' }}
+                style={{ 
+                  height: '42px', 
+                  border: '1px solid var(--accent-gold)', 
+                  borderRadius: '4px', 
+                  color: 'var(--accent-gold)', 
+                  background: 'none', 
+                  padding: '0 16px', 
+                  fontWeight: 'bold', 
+                  cursor: 'pointer', 
+                  zIndex: 100, 
+                  fontSize: '0.8rem', 
+                  letterSpacing: '0.05em' 
+                }}
               >
                 🔄 RECARGAR
               </button>

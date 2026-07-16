@@ -7,6 +7,7 @@ import BooksPage from './pages/BooksPage'
 import NosotrosPage from './pages/NosotrosPage'
 import ContactPage from './pages/ContactPage'
 import BookCover from './components/BookCover'
+import SideNavigation from './components/SideNavigation'
 import './App.css'
 
 // Inline SVG Icon Components
@@ -39,7 +40,7 @@ function ScrollToTop() {
 function AppContent() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(fallbackData);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sideNavOpen, setSideNavOpen] = useState(false);
   const location = useLocation();
 
   const loadData = async (showSpinner = false) => {
@@ -62,14 +63,6 @@ function AppContent() {
 
   const handleReload = () => {
     loadData(true);
-  };
-
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
-
-  const closeMobileMenu = () => {
-    setMobileMenuOpen(false);
   };
 
   if (loading) {
@@ -102,42 +95,76 @@ function AppContent() {
       <ScrollToTop />
       
       {/* 1. Legible Solid Cream Header (#F6EFE3) */}
-      <header className={headerClass}>
-        <div className="container header-container">
-          <Link to="/" className="logo-link" onClick={closeMobileMenu}>
-            <div className="logo-text" style={{ color: 'var(--wine-dark)' }}>
-              NOVELI
-              <span className="logo-sub" style={{ color: 'var(--text-muted)' }}> — EDITORIAL</span>
-              <svg className="logo-leaf" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '5px', display: 'inline-block', verticalAlign: 'middle' }}>
-                <path d="M2 22C2 22 10 22 16 16C21 11 20 4 20 4C20 4 13 3 8 8C2 14 2 22 2 22Z" fill="var(--accent-gold)" />
-                <path d="M12 12L2 22" />
-              </svg>
-            </div>
-          </Link>
+      <header className={headerClass} style={{ position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 4px 20px rgba(42, 15, 20, 0.05)', backdropFilter: 'blur(8px)', backgroundColor: '#F6EFE3', borderBottom: '1px solid rgba(199, 148, 58, 0.15)', height: '68px', display: 'flex', alignItems: 'center' }}>
+        <div className="container" style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', width: '100%', padding: '0 20px' }}>
           
-          <button 
-            className="menu-toggle" 
-            onClick={toggleMobileMenu} 
-            aria-label="Abrir menú de navegación"
-            id="btn-menu-toggle"
-            style={{ color: 'var(--wine-dark)' }}
-          >
-            ☰
-          </button>
+          {/* Izquierda: Botón MENÚ */}
+          <div style={{ justifySelf: 'start' }}>
+            <button 
+              onClick={() => setSideNavOpen(true)} 
+              aria-label="Abrir menú"
+              aria-expanded={sideNavOpen}
+              id="btn-menu-toggle-editorial"
+              className="btn-header-menu-toggle"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: 'var(--wine-dark)',
+                border: '1px solid var(--wine-dark)',
+                borderRadius: '4px',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                padding: '8px 16px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              MENÚ ☰
+            </button>
+          </div>
 
-          <nav className={`nav ${mobileMenuOpen ? 'open' : ''}`}>
-            <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu} style={{ color: 'var(--wine-dark)' }}>INICIO</NavLink>
-            <NavLink to="/servicios" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu} style={{ color: 'var(--wine-dark)' }}>SERVICIOS</NavLink>
-            <NavLink to="/libros" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu} style={{ color: 'var(--wine-dark)' }}>LIBROS</NavLink>
-            <NavLink to="/nosotros" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu} style={{ color: 'var(--wine-dark)' }}>NOSOTROS</NavLink>
-            <NavLink to="/contacto" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu} style={{ color: 'var(--wine-dark)' }}>CONTACTO</NavLink>
-          </nav>
+          {/* Centro: Logo */}
+          <div style={{ justifySelf: 'center' }}>
+            <Link to="/" className="logo-link" style={{ textDecoration: 'none' }}>
+              <div className="logo-text" style={{ color: 'var(--wine-dark)', margin: 0 }}>
+                NOVELI
+                <span className="logo-sub" style={{ color: 'var(--text-muted)' }}> — EDITORIAL</span>
+                <svg className="logo-leaf" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '5px', display: 'inline-block', verticalAlign: 'middle' }}>
+                  <path d="M2 22C2 22 10 22 16 16C21 11 20 4 20 4C20 4 13 3 8 8C2 14 2 22 2 22Z" fill="var(--accent-gold)" />
+                  <path d="M12 12L2 22" />
+                </svg>
+              </div>
+            </Link>
+          </div>
 
-          <div className="header-cta-wrapper">
-            <Link to="/contacto" className="btn btn-header-cta" onClick={closeMobileMenu}>
+          {/* Derecha: Botón SOLICITAR PROPUESTA */}
+          <div style={{ justifySelf: 'end' }} className="header-cta-wrapper-dynamic">
+            <Link 
+              to="/contacto" 
+              className="btn btn-header-cta-dynamic" 
+              style={{
+                backgroundColor: 'var(--accent-gold)',
+                color: 'var(--wine-dark)',
+                border: '1px solid var(--accent-gold)',
+                borderRadius: '4px',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                padding: '8px 16px',
+                textDecoration: 'none',
+                transition: 'all 0.3s ease',
+                display: 'inline-block'
+              }}
+            >
               SOLICITAR PROPUESTA
             </Link>
           </div>
+          
         </div>
       </header>
 
@@ -296,6 +323,13 @@ function AppContent() {
           </div>
         </div>
       </footer>
+
+      {/* Modern vertical side navigation drawer */}
+      <SideNavigation 
+        isOpen={sideNavOpen} 
+        onClose={() => setSideNavOpen(false)} 
+        links={links} 
+      />
     </div>
   );
 }

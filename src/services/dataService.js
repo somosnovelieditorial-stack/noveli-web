@@ -5,6 +5,26 @@ export const fallbackData = {
     hero_title: "Tu libro merece una edición a la altura de su historia.",
     hero_subtitle: "En Noveli acompañamos a autores en el proceso editorial, desde la revisión del manuscrito hasta la preparación final para publicación digital o impresa."
   },
+  heroSettings: {
+    eyebrow: "Somos Noveli Editorial",
+    title: "Tu libro merece una edición a la altura de su",
+    highlighted_word: "historia.",
+    subtitle: "En Noveli acompañamos a autores en el proceso editorial, desde la revisión del manuscrito hasta la preparación final para publicación digital o impresa.",
+    primary_button_text: "SOLICITAR PROPUESTA EDITORIAL",
+    primary_button_url: "/contacto",
+    secondary_button_text: "VER SERVICIOS",
+    secondary_button_url: "/servicios",
+    background_image_url: "",
+    side_image_url: "",
+    featured_book_id: null,
+    show_featured_book: true
+  },
+  heroQuickServices: [
+    { label: "CORRECCIÓN EDITORIAL", icon_name: "edit", link_url: "/servicios" },
+    { label: "MAQUETACIÓN PROFESIONAL", icon_name: "layout", link_url: "/servicios" },
+    { label: "DISEÑO DE PORTADAS", icon_name: "book", link_url: "/servicios" },
+    { label: "AUTOPUBLICACIÓN EN AMAZON", icon_name: "globe", link_url: "/servicios" }
+  ],
   services: [
     {
       id: 1,
