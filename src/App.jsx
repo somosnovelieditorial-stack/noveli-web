@@ -228,41 +228,64 @@ function AppContent() {
                 </h4>
                 
                 <div className="footer-instagram-grid">
-                  {footerGallery && footerGallery.length > 0 ? (
-                    footerGallery.slice(0, 6).map((item, idx) => {
-                      const content = (
-                        <div className="instagram-grid-item-inner" style={{ width: '56px', height: '84px', overflow: 'hidden', borderRadius: '2px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                          <img 
-                            src={item.image_url} 
-                            alt={item.title} 
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                          />
-                        </div>
-                      );
+                  {(() => {
+                    const activeGallery = (footerGallery || []).filter(item => item.active !== false);
+                    if (activeGallery.length > 0) {
+                      return activeGallery.slice(0, 6).map((item, idx) => {
+                        const content = (
+                          <div className="instagram-grid-item-inner" style={{ width: '56px', height: '84px', overflow: 'hidden', borderRadius: '2px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            <img 
+                              src={item.image_url} 
+                              alt={item.title || ""} 
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                            />
+                          </div>
+                        );
+                        return (
+                          <div key={item.id || idx} className="instagram-grid-item" title={item.title}>
+                            {item.link_url ? (
+                              <a href={item.link_url} target="_blank" rel="noopener noreferrer">
+                                {content}
+                              </a>
+                            ) : (
+                              content
+                            )}
+                          </div>
+                        );
+                      });
+                    } else {
                       return (
-                        <div key={idx} className="instagram-grid-item" title={item.title}>
-                          {item.link_url ? (
-                            <a href={item.link_url} target="_blank" rel="noopener noreferrer">
-                              {content}
+                        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', gridColumn: 'span 3', padding: '10px 0' }}>
+                          {fs.instagram_url ? (
+                            <a 
+                              href={fs.instagram_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="btn-ver-instagram"
+                              style={{
+                                display: 'inline-block',
+                                padding: '6px 12px',
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                borderRadius: '4px',
+                                color: '#FFFFFF',
+                                textDecoration: 'none',
+                                fontWeight: 'bold',
+                                fontSize: '0.7rem',
+                                letterSpacing: '0.05em',
+                                transition: 'background 0.2s'
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'}
+                              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                            >
+                              VER INSTAGRAM
                             </a>
                           ) : (
-                            content
+                            <span>Pronto compartiremos novedades editoriales.</span>
                           )}
                         </div>
                       );
-                    })
-                  ) : (
-                    books && books.slice(0, 6).map((book, idx) => (
-                      <div key={book.id} className="instagram-grid-item">
-                        <BookCover 
-                          title={book.title} 
-                          author={book.author} 
-                          coverUrl={getBookCover(book)} 
-                          index={idx} 
-                        />
-                      </div>
-                    ))
-                  )}
+                    }
+                  })()}
                 </div>
               </div>
             )}
