@@ -1909,3 +1909,262 @@ label {
     display: none !important;
   }
 }
+
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE OVERRIDES
+   ========================================================================== */
+
+/* General Layout Adjustments */
+html, body {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* Tablet & Mobile Grid Adjustments (<= 1024px) */
+@media (max-width: 1024px) {
+  .nosotros-grid {
+    grid-template-columns: 1fr !important;
+    gap: 30px !important;
+  }
+  .nosotros-grid div:first-child {
+    height: 320px !important;
+  }
+}
+
+/* Mobile Layout Overrides (<= 768px) */
+@media (max-width: 768px) {
+  /* Category filter chips horizontally scrollable on mobile */
+  .book-filters {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 24px !important;
+    gap: 8px !important;
+    scrollbar-width: none !important;
+  }
+  .book-filters::-webkit-scrollbar {
+    display: none !important;
+  }
+  .filter-btn {
+    flex-shrink: 0 !important;
+  }
+
+  /* Catalog details modal mobile layout */
+  .book-modal-overlay {
+    z-index: 9999 !important;
+  }
+  .book-modal-container {
+    width: 92vw !important;
+    max-height: 85vh !important;
+    padding: 24px 20px !important;
+  }
+  .book-modal-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  .book-modal-cover-col {
+    display: flex !important;
+    justify-content: center !important;
+  }
+  .book-modal-cover-col .book-cover-container {
+    width: 140px !important;
+    height: 210px !important;
+  }
+  .book-modal-btn {
+    width: 100% !important;
+    display: block !important;
+  }
+
+  /* Contact page form stack in 1 column */
+  .contact-form-card form div[style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+  .contact-form-card form select,
+  .contact-form-card form input,
+  .contact-form-card form textarea,
+  .contact-form-card form button {
+    width: 100% !important;
+  }
+
+  /* Section Title Adjustments */
+  .section-title {
+    font-size: 30px !important;
+  }
+}
+
+/* Small Screen Mobile Layout Overrides (<= 640px) */
+@media (max-width: 640px) {
+  /* Header mobile optimization */
+  .header {
+    height: 56px !important;
+  }
+  .header-container {
+    height: 56px !important;
+    padding: 0 16px !important;
+  }
+  .logo-text {
+    font-size: 0.9rem !important;
+  }
+  .logo-sub {
+    display: none !important;
+  }
+  .logo-leaf {
+    width: 10px !important;
+    height: 10px !important;
+  }
+  .btn-header-menu-toggle {
+    font-size: 0.65rem !important;
+    padding: 6px 12px !important;
+  }
+
+  /* Hero Section mobile stack layout */
+  .hero-section {
+    padding-top: 56px !important;
+    padding-bottom: 0px !important;
+    border-bottom: none !important;
+  }
+  .hero-left-content {
+    padding: 28px 18px !important;
+    text-align: center !important;
+  }
+  .hero-badge {
+    font-size: 11px !important;
+    margin-bottom: 14px !important;
+    padding: 2px 8px !important;
+    align-self: center !important;
+  }
+  .hero-title {
+    font-size: 34px !important;
+    line-height: 1.05 !important;
+    margin-bottom: 12px !important;
+    max-width: 100% !important;
+  }
+  .hero-divider-line {
+    margin: 0 auto 12px !important;
+  }
+  .hero-subtitle {
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+    max-width: 330px !important;
+    margin: 12px auto 16px !important;
+  }
+  .hero-quick-services {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px 14px !important;
+    padding: 10px 0 !important;
+    margin-bottom: 16px !important;
+    max-height: 140px !important;
+  }
+  .hero-quick-services .quick-service-item:nth-child(n+3) {
+    display: none !important;
+  }
+  .hero-quick-services .quick-service-item svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  .hero-quick-services .quick-service-item span {
+    font-size: 11px !important;
+  }
+  .hero-btns {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px !important;
+    margin-top: 18px !important;
+  }
+  .hero-btns .btn {
+    width: 100% !important;
+    height: 48px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+  }
+  .hero-right-visual {
+    height: 300px !important;
+    padding: 16px !important;
+    margin: 0 !important;
+  }
+  .hero-right-visual img {
+    max-height: 260px !important;
+    object-fit: contain !important;
+  }
+  .hero-books-showcase {
+    height: 100% !important;
+  }
+  #servicios {
+    padding-top: 36px !important;
+  }
+
+  /* Services home carousel adjustments */
+  .services-section .carousel-arrow {
+    display: none !important;
+  }
+  .services-carousel {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  
+  /* Services detail page responsive card */
+  .service-header-decor {
+    height: 120px !important;
+  }
+  .service-card-body {
+    padding: 36px 20px 20px !important;
+  }
+
+  /* Catalog page grid responsive column adaptation */
+  .books-full-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px 12px !important;
+  }
+  .books-full-grid .book-card {
+    width: 100% !important;
+  }
+  .books-full-grid .book-cover-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    aspect-ratio: 2 / 3 !important;
+    height: auto !important;
+  }
+
+  /* Footer dynamic layout stack */
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    text-align: center !important;
+    gap: 20px !important;
+  }
+  .footer-col {
+    grid-column: span 1 !important;
+  }
+  .footer-col p {
+    margin: 0 auto !important;
+  }
+  .footer-socials-inline {
+    justify-content: center !important;
+  }
+  .footer-instagram-grid {
+    justify-content: center !important;
+  }
+
+  /* Body Typography */
+  p, span, li, a {
+    font-size: 15px !important;
+  }
+  .btn {
+    font-size: 12px !important;
+  }
+}
+
+/* Extra Small screen adjustments (<= 380px) */
+@media (max-width: 380px) {
+  .books-full-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .service-card-compact {
+    width: 82vw !important;
+  }
+}

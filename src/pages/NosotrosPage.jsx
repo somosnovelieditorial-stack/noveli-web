@@ -14,7 +14,7 @@ export default function NosotrosPage({ sections = {}, links = {} }) {
           <h1 className="section-title" style={{ fontSize: '2.5rem', marginBottom: '12px' }}>Sobre nosotros</h1>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '40fr 60fr', gap: '40px', alignItems: 'center' }}>
+        <div className="nosotros-grid" style={{ display: 'grid', gridTemplateColumns: '40fr 60fr', gap: '40px', alignItems: 'center' }}>
           <div 
             style={{ 
               backgroundImage: 'url(/manifesto_still_life.jpg)', 
