@@ -1,19 +1,18 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { formatServicePrice } from '../services/dataService';
 
 export default function ServiceDetailPage({ services = [] }) {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Find service by ID (from Supabase DB results)
+  // Find service by ID
   const service = services ? services.find(s => String(s.id) === String(id)) : null;
 
   if (!service) {
     return (
-      <div className="section" style={{ backgroundColor: 'var(--crema-papel-light)', minHeight: '80vh', paddingTop: '120px', textAlign: 'center' }}>
+      <div className="section" style={{ backgroundColor: '#FFFFFF', minHeight: '80vh', paddingTop: '120px', textAlign: 'center' }}>
         <div className="container">
-          <h2 style={{ fontFamily: 'var(--font-serif-title)', color: 'var(--black-primary)', marginBottom: '16px' }}>Servicio no encontrado</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>El servicio que buscas no existe o ha sido desactivado.</p>
+          <h2 style={{ fontFamily: 'var(--font-serif-title)', color: '#050505', marginBottom: '16px' }}>Servicio no encontrado</h2>
+          <p style={{ color: '#555555', marginBottom: '24px' }}>El servicio que buscas no existe o ha sido desactivado.</p>
           <Link to="/servicios" className="btn btn-dark">VOLVER A SERVICIOS</Link>
         </div>
       </div>
@@ -37,178 +36,374 @@ export default function ServiceDetailPage({ services = [] }) {
   const notIncludedList = formatListText(service.not_included);
   const processStepsList = formatListText(service.process_steps);
 
-  const priceLabel = service.price_from ? formatServicePrice(service.price_from, service.currency) : null;
+  // Exact price formatting helper matching user requirements
+  const getPriceVal = (svc) => {
+    if (svc.price_from && Number(svc.price_from) > 0) {
+      const formatted = Number(svc.price_from).toLocaleString('es-CL');
+      const currency = svc.currency || 'CLP';
+      return `Desde $${formatted} ${currency}`;
+    }
+    return 'Cotización personalizada';
+  };
+
+  const priceVal = getPriceVal(service);
+  const requiresManuscriptInfo = service.requires_manuscript_info === true;
 
   return (
-    <div className="section service-detail-page fade-in" style={{ backgroundColor: 'var(--white-primary)', minHeight: '85vh', paddingTop: '110px', paddingBottom: '70px' }}>
-      <div className="container">
+    <div className="section service-detail-page fade-in" style={{ backgroundColor: '#FFFFFF', minHeight: '85vh', paddingTop: '100px', paddingBottom: '60px' }}>
+      <div className="container" style={{ maxWidth: '1120px', padding: '0 20px', margin: '0 auto' }}>
         
         {/* Back Link */}
-        <div style={{ marginBottom: '28px', textAlign: 'left' }}>
-          <Link to="/servicios" style={{ fontSize: '0.72rem', fontFamily: 'var(--font-sans)', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--gold-primary)', textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            ➔ VOLVER A SERVICIOS
+        <div style={{ marginBottom: '24px', textAlign: 'left' }}>
+          <Link to="/servicios" className="service-detail-back-link" style={{ 
+            fontSize: '0.8rem', 
+            fontFamily: 'var(--font-sans)', 
+            fontWeight: 600, 
+            letterSpacing: '0.05em', 
+            color: '#C7943A', 
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'color 0.2s ease'
+          }}>
+            ← Volver a servicios
           </Link>
         </div>
 
+        {/* Header Block */}
+        <header style={{ textAlign: 'left', marginBottom: '32px' }}>
+          <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-sans)', fontWeight: 700, letterSpacing: '0.12em', color: '#C7943A', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+            {service.category || 'SERVICIO EDITORIAL'}
+          </span>
+          <h1 className="service-detail-title" style={{ 
+            fontFamily: 'var(--font-serif-title)', 
+            color: '#050505', 
+            marginBottom: '16px', 
+            lineHeight: 1.15,
+            fontWeight: 400
+          }}>
+            {service.title}
+          </h1>
+          {service.short_description && (
+            <p style={{ 
+              fontSize: '1.05rem', 
+              fontFamily: 'var(--font-serif-body)', 
+              color: '#555555', 
+              lineHeight: '1.6', 
+              margin: 0,
+              maxWidth: '680px'
+            }}>
+              {service.short_description}
+            </p>
+          )}
+        </header>
+
         {/* 2 Column Layout */}
-        <div className="service-detail-grid" style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr', gap: '48px', alignItems: 'start' }}>
+        <div className="service-detail-grid">
           
           {/* Left Column: Details */}
-          <div className="service-detail-content" style={{ textAlign: 'left' }}>
-            <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-sans)', fontWeight: 700, letterSpacing: '0.12em', color: 'var(--gold-primary)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-              {service.category || 'SERVICIO EDITORIAL'}
-            </span>
-            <h1 style={{ fontFamily: 'var(--font-serif-title)', fontSize: '2.6rem', color: 'var(--black-primary)', marginBottom: '16px', lineHeight: 1.15 }}>
-              {service.title}
-            </h1>
+          <div className="service-detail-left">
             
-            {service.short_description && (
-              <p style={{ fontSize: '1.05rem', fontFamily: 'var(--font-serif-body)', color: 'var(--black-editorial)', lineHeight: '1.6', marginBottom: '24px', fontStyle: 'italic' }}>
-                {service.short_description}
-              </p>
-            )}
-
             {/* Service Banner Image */}
             {(service.image_url || service.background_url) && (
-              <div style={{ width: '100%', height: '280px', borderRadius: '4px', overflow: 'hidden', marginBottom: '32px', border: '1px solid var(--gray-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="service-detail-img-container">
                 <img 
                   src={service.image_url || service.background_url} 
                   alt={service.title} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                 />
               </div>
             )}
 
+            {/* Description */}
             {service.full_description && (
-              <div style={{ marginBottom: '32px' }}>
-                <h3 style={{ fontFamily: 'var(--font-serif-title)', fontSize: '1.35rem', color: 'var(--black-primary)', marginBottom: '12px', borderBottom: '1px solid var(--gray-border)', paddingBottom: '8px' }}>Descripción del Servicio</h3>
-                <p style={{ fontSize: '0.92rem', fontFamily: 'var(--font-serif-body)', color: 'var(--gray-text)', lineHeight: '1.7', whiteSpace: 'pre-line' }}>
+              <section className="detail-section">
+                <h2 className="detail-section-title">Descripción del servicio</h2>
+                <p className="detail-section-text">
                   {service.full_description}
                 </p>
-              </div>
+              </section>
             )}
 
-            {/* Includes / Not Included */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom: '32px' }} className="detail-lists-row">
-              {includesList.length > 0 && (
-                <div>
-                  <h4 style={{ fontFamily: 'var(--font-serif-title)', fontSize: '1.15rem', color: 'var(--black-primary)', marginBottom: '12px' }}>¿Qué incluye?</h4>
-                  <ul style={{ paddingLeft: '16px', margin: 0 }}>
-                    {includesList.map((item, idx) => (
-                      <li key={idx} style={{ fontSize: '0.88rem', color: 'var(--gray-text)', marginBottom: '6px', listStyleType: 'square' }}>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {notIncludedList.length > 0 && (
-                <div>
-                  <h4 style={{ fontFamily: 'var(--font-serif-title)', fontSize: '1.15rem', color: 'var(--black-primary)', marginBottom: '12px' }}>No incluye</h4>
-                  <ul style={{ paddingLeft: '16px', margin: 0 }}>
-                    {notIncludedList.map((item, idx) => (
-                      <li key={idx} style={{ fontSize: '0.88rem', color: 'var(--gray-text)', marginBottom: '6px', listStyleType: 'circle' }}>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
+            {/* What's Included */}
+            {includesList.length > 0 && (
+              <section className="detail-section">
+                <h2 className="detail-section-title">Qué incluye</h2>
+                <ul className="detail-list-bullets">
+                  {includesList.map((item, idx) => (
+                    <li key={idx}>
+                      <span className="bullet-indicator">✓</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
             {/* Process Steps */}
             {processStepsList.length > 0 && (
-              <div style={{ marginBottom: '32px' }}>
-                <h3 style={{ fontFamily: 'var(--font-serif-title)', fontSize: '1.35rem', color: 'var(--black-primary)', marginBottom: '16px', borderBottom: '1px solid var(--gray-border)', paddingBottom: '8px' }}>Proceso de Trabajo</h3>
-                <ol style={{ paddingLeft: '18px', margin: 0 }}>
+              <section className="detail-section">
+                <h2 className="detail-section-title">Proceso de trabajo</h2>
+                <ul className="detail-list-bullets process-list">
                   {processStepsList.map((step, idx) => (
-                    <li key={idx} style={{ fontSize: '0.9rem', color: 'var(--gray-text)', marginBottom: '10px', lineHeight: '1.5' }}>
-                      {step}
+                    <li key={idx}>
+                      <span className="bullet-indicator number-bullet">{idx + 1}</span>
+                      <span>{step}</span>
                     </li>
                   ))}
-                </ol>
-              </div>
+                </ul>
+              </section>
+            )}
+
+            {/* What's Not Included */}
+            {notIncludedList.length > 0 && (
+              <section className="detail-section">
+                <h2 className="detail-section-title">Qué no incluye</h2>
+                <ul className="detail-list-bullets no-include-list">
+                  {notIncludedList.map((item, idx) => (
+                    <li key={idx}>
+                      <span className="bullet-indicator delete-bullet">✗</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {/* Estimated Time (Alternative block) */}
+            {service.estimated_time && (
+              <section className="detail-section">
+                <h2 className="detail-section-title">Tiempo estimado</h2>
+                <p className="detail-section-text" style={{ fontSize: '0.92rem' }}>
+                  ⏳ {service.estimated_time}
+                </p>
+              </section>
             )}
           </div>
 
           {/* Right Column: Pricing & Action Box */}
-          <div className="service-detail-sidebar" style={{ position: 'sticky', top: '100px' }}>
-            <div style={{
-              backgroundColor: 'var(--white-primary)',
-              border: '1px solid var(--accent-gold)',
-              padding: '30px',
-              textAlign: 'center',
-              boxShadow: 'var(--shadow-md)',
-              borderRadius: '4px'
-            }}>
-              <span style={{ fontSize: '0.62rem', fontFamily: 'var(--font-sans)', fontWeight: 700, letterSpacing: '0.12em', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-                VALOR ESTIMADO
-              </span>
+          <aside className="service-detail-right">
+            <div className="service-price-card">
+              <span className="price-card-label">VALOR ESTIMADO</span>
+              <div className="price-card-value">
+                {priceVal}
+              </div>
               
-              {priceLabel ? (
-                <>
-                  <div style={{ fontSize: '2.2rem', fontFamily: 'var(--font-serif-title)', color: 'var(--black-primary)', fontWeight: 700, marginBottom: '4px' }}>
-                    {priceLabel}
-                  </div>
-                  <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', display: 'block', marginBottom: '24px' }}>
-                    Precio base de referencia
-                  </span>
-                </>
-              ) : (
-                <div style={{ fontSize: '1.35rem', fontFamily: 'var(--font-serif-title)', color: 'var(--black-primary)', fontWeight: 700, marginBottom: '24px' }}>
-                  A cotizar
-                </div>
-              )}
-
-              {/* Estimate times */}
-              {(service.estimated_time || service.quote_note) && (
-                <div style={{ textAlign: 'left', marginBottom: '24px', backgroundColor: 'var(--white-warm)', padding: '16px', border: '1px solid var(--gray-border)', borderRadius: '4px' }}>
-                  {service.estimated_time && (
-                    <p style={{ fontSize: '0.8rem', color: 'var(--gray-text)', marginBottom: service.quote_note ? '8px' : '0', lineHeight: '1.4' }}>
-                      ⏳ <strong>Tiempo estimado:</strong> {service.estimated_time}
-                    </p>
-                  )}
-                  {service.quote_note && (
-                    <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '0', lineHeight: '1.4', fontStyle: 'italic' }}>
-                      📋 <strong>Nota:</strong> {service.quote_note}
-                    </p>
-                  )}
-                </div>
+              {service.quote_note && (
+                <p className="price-card-note">
+                  {service.quote_note}
+                </p>
               )}
 
               <button 
                 onClick={handleQuoteClick}
-                className="btn btn-dark"
-                style={{ width: '100%', padding: '12px', fontSize: '0.78rem', letterSpacing: '0.08em', fontWeight: 700 }}
+                className="btn-price-card-action"
               >
-                COTIZA TU PROYECTO
+                Cotiza tu proyecto
               </button>
+
+              <p className="price-card-footer-text">
+                {requiresManuscriptInfo 
+                  ? "Para cotizar este servicio necesitaremos páginas o palabras aproximadas del manuscrito."
+                  : "No necesitas indicar páginas o palabras para iniciar esta cotización."
+                }
+              </p>
             </div>
-          </div>
+          </aside>
 
         </div>
       </div>
 
-      {/* Inline styles for media queries */}
+      {/* Styled components CSS layer for clean layout and responsive media queries */}
       <style>{`
+        .service-detail-grid {
+          display: grid;
+          grid-template-columns: 65% 35%;
+          gap: 44px;
+          align-items: start;
+          text-align: left;
+        }
+        .service-detail-title {
+          font-size: 48px;
+        }
+        .service-detail-img-container {
+          width: 100%;
+          max-height: 320px;
+          overflow: hidden;
+          border-radius: 10px;
+          border: 1px solid #E5E5E5;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+          margin-bottom: 32px;
+        }
+        .service-detail-img-container img {
+          width: 100%;
+          height: 320px;
+          object-fit: cover;
+          display: block;
+        }
+        .detail-section {
+          margin-bottom: 32px;
+          text-align: left;
+        }
+        .detail-section-title {
+          font-family: var(--font-serif-title);
+          font-size: 24px;
+          color: #050505;
+          margin-bottom: 14px;
+          font-weight: 400;
+          border-bottom: 1px solid #E5E5E5;
+          padding-bottom: 8px;
+          max-width: 760px;
+        }
+        .detail-section-text {
+          font-family: var(--font-serif-body);
+          font-size: 0.95rem;
+          color: #555555;
+          line-height: 1.7;
+          white-space: pre-line;
+          max-width: 760px;
+        }
+        .detail-list-bullets {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          max-width: 760px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .detail-list-bullets li {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          font-family: var(--font-serif-body);
+          font-size: 0.95rem;
+          color: #555555;
+          line-height: 1.5;
+        }
+        .bullet-indicator {
+          color: #C7943A;
+          font-weight: bold;
+          flex-shrink: 0;
+        }
+        .number-bullet {
+          background-color: rgba(199, 148, 58, 0.08);
+          border-radius: 50%;
+          width: 22px;
+          height: 22px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.72rem;
+          font-family: var(--font-sans);
+          color: #C7943A;
+          margin-top: 1px;
+        }
+        .delete-bullet {
+          color: #9B6A22;
+        }
+        
+        /* Sidebar Pricing Card */
+        .service-price-card {
+          background-color: #FFFFFF;
+          border: 1px solid rgba(199, 148, 58, 0.25);
+          border-radius: 12px;
+          padding: 28px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+          max-width: 340px;
+          position: sticky;
+          top: 96px;
+          margin-left: auto;
+          text-align: center;
+        }
+        .price-card-label {
+          font-size: 0.68rem;
+          font-family: var(--font-sans);
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          color: #C7943A;
+          display: block;
+          margin-bottom: 8px;
+        }
+        .price-card-value {
+          font-family: var(--font-serif-title);
+          color: #050505;
+          font-weight: 700;
+          margin-bottom: 12px;
+          white-space: nowrap;
+          line-height: 1.1;
+          font-size: 34px;
+        }
+        .price-card-note {
+          font-size: 0.78rem;
+          color: #555555;
+          line-height: 1.4;
+          margin: 0 0 16px 0;
+          font-style: italic;
+        }
+        .btn-price-card-action {
+          width: 100%;
+          height: 48px;
+          background-color: #050505;
+          color: #FFFFFF;
+          border: 1px solid #050505;
+          border-radius: 0;
+          font-family: var(--font-sans);
+          font-weight: 700;
+          font-size: 0.78rem;
+          letter-spacing: 0.08em;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          text-transform: uppercase;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .btn-price-card-action:hover {
+          background-color: #C7943A;
+          border-color: #C7943A;
+          color: #050505;
+        }
+        .price-card-footer-text {
+          font-size: 0.72rem;
+          color: #555555;
+          line-height: 1.4;
+          margin: 12px 0 0 0;
+        }
+
+        /* Responsive Media Queries */
         @media (max-width: 992px) {
           .service-detail-grid {
-            grid-template-columns: 1fr !important;
-            gap: 32px !important;
+            grid-template-columns: 1fr;
+            gap: 32px;
           }
-          .service-detail-sidebar {
-            position: static !important;
-            margin-top: 16px;
+          .service-price-card {
+            position: static;
+            margin: 20px auto 0;
+            width: 100%;
+            max-width: 100%;
           }
         }
-        @media (max-width: 640px) {
-          .detail-lists-row {
-            grid-template-columns: 1fr !important;
-            gap: 24px !important;
+        @media (max-width: 768px) {
+          .service-detail-page {
+            padding-top: 80px !important;
+            padding-bottom: 40px !important;
           }
-          .service-detail-content h1 {
-            font-size: 2.0rem !important;
+          .service-detail-title {
+            font-size: 34px;
+          }
+          .service-detail-img-container {
+            max-height: 220px;
+            margin-bottom: 24px;
+          }
+          .service-detail-img-container img {
+            height: 220px;
+          }
+          .detail-section-title {
+            font-size: 20px;
+          }
+          .price-card-value {
+            font-size: 30px;
           }
         }
       `}</style>
