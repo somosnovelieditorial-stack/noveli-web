@@ -1,4 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { serviceNeedsManuscriptInfo } from '../services/dataService';
 
 export default function ServiceDetailPage({ services = [] }) {
   const { id } = useParams();
@@ -46,7 +47,7 @@ export default function ServiceDetailPage({ services = [] }) {
   };
 
   const priceVal = getPriceVal(service);
-  const requiresManuscriptInfo = service.requires_manuscript_info === true;
+  const requiresManuscriptInfo = serviceNeedsManuscriptInfo(service);
 
   return (
     <div className="service-detail-wrapper-outer">
@@ -77,7 +78,7 @@ export default function ServiceDetailPage({ services = [] }) {
         {/* Main Card */}
         <div className="service-detail-card">
           
-          {/* Left Column: Visual + Description */}
+          {/* Left Column: Visual + Optional small category info */}
           <div className="service-detail-card-left">
             {(service.image_url || service.background_url) && (
               <div className="service-detail-card-img-wrapper">
@@ -87,18 +88,26 @@ export default function ServiceDetailPage({ services = [] }) {
                 />
               </div>
             )}
-
-            {service.full_description && (
-              <div className="service-detail-description-block">
-                <h3>Descripción del servicio</h3>
-                <p>{service.full_description}</p>
-              </div>
-            )}
+            <div style={{ marginTop: '12px', textAlign: 'center' }}>
+              <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-sans)', fontWeight: 600, letterSpacing: '0.08em', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                Ficha Técnica Noveli • {service.category || 'Servicio'}
+              </span>
+            </div>
           </div>
 
-          {/* Right Column: Commercial Summary */}
+          {/* Right Column: Commercial Summary & Details */}
           <div className="service-detail-card-right">
             
+            {/* Description of the service */}
+            {service.full_description && (
+              <div className="service-detail-description-block" style={{ borderBottom: '1px solid #E5E5E5', paddingBottom: '24px' }}>
+                <h3 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-serif-title)', color: '#050505', margin: '0 0 10px 0', fontWeight: 400 }}>Descripción del servicio</h3>
+                <p style={{ fontFamily: 'var(--font-serif-body)', fontSize: '0.92rem', color: '#555555', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-line' }}>
+                  {service.full_description}
+                </p>
+              </div>
+            )}
+
             {/* Price Box */}
             <div className="price-box-section">
               <span className="price-box-label">VALOR ESTIMADO</span>
@@ -124,7 +133,7 @@ export default function ServiceDetailPage({ services = [] }) {
               </button>
               <p className="price-box-info-text">
                 {requiresManuscriptInfo 
-                  ? "Para cotizar este servicio necesitaremos páginas o palabras aproximadas del manuscrito."
+                  ? "Para entregar una cotización más exacta, necesitaremos que nos indiques el número aproximado de páginas o palabras de tu manuscrito."
                   : "Puedes iniciar la cotización sin indicar páginas o palabras."
                 }
               </p>
@@ -273,8 +282,8 @@ export default function ServiceDetailPage({ services = [] }) {
         }
         .service-detail-card-img-wrapper {
           width: 100%;
-          max-height: 260px;
-          height: 260px;
+          max-height: 320px;
+          height: 320px;
           overflow: hidden;
           border-radius: 10px;
           border: 1px solid #E5E5E5;

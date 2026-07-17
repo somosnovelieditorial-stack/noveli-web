@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { serviceNeedsManuscriptInfo } from '../services/dataService';
 
 const CheckIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -28,7 +29,7 @@ export default function ContactForm({ email: _email, services = [], initialServi
     (initialServiceId && String(s.id) === String(initialServiceId) && s.title === formData.service_interest) || 
     (s.title === formData.service_interest)
   ) : null;
-  const requiresManuscriptInfo = selectedServiceObj ? selectedServiceObj.requires_manuscript_info === true : false;
+  const requiresManuscriptInfo = serviceNeedsManuscriptInfo(selectedServiceObj);
 
   useEffect(() => {
     if (initialService) {
@@ -55,7 +56,7 @@ export default function ContactForm({ email: _email, services = [], initialServi
       const hasPages = formData.pages && String(formData.pages).trim().length > 0;
       const hasWords = formData.words && String(formData.words).trim().length > 0;
       if (!hasPages && !hasWords) {
-        setErrorMsg('Para cotizar este servicio necesitamos conocer la extensión aproximada del manuscrito (páginas o palabras).');
+        setErrorMsg('Para entregar una cotización más exacta, necesitaremos que nos indiques el número aproximado de páginas o palabras de tu manuscrito.');
         return;
       }
     }
@@ -236,7 +237,7 @@ export default function ContactForm({ email: _email, services = [], initialServi
         }}>
           {requiresManuscriptInfo ? (
             <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--accent-gold)', fontWeight: 600 }}>
-              💡 Para cotizar este servicio necesitamos conocer la extensión aproximada del manuscrito.
+              💡 Este servicio requiere conocer la extensión aproximada del manuscrito para entregar una cotización más exacta.
             </p>
           ) : (
             <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>

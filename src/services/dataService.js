@@ -684,3 +684,42 @@ export function getBookAction(book) {
   }
   return { label: 'Ver detalles', action: 'modal' };
 }
+
+export const serviceNeedsManuscriptInfo = (service) => {
+  if (!service) return false;
+  const title = String(service?.title || '').toLowerCase();
+  const category = String(service?.category || '').toLowerCase();
+
+  const needs = [
+    'full ebook',
+    'full físico',
+    'full fisico',
+    'full total',
+    'corrección',
+    'correccion',
+    'maquetación',
+    'maquetacion',
+    'editorial',
+    'digitalización',
+    'digitalizacion',
+    'producción editorial',
+    'produccion editorial'
+  ];
+
+  const excluded = [
+    'portada',
+    'diseño de portada',
+    'diseno de portada',
+    'difusión',
+    'difusion',
+    'registro',
+    'derechos',
+    'legal',
+    'marketing'
+  ];
+
+  if (excluded.some(word => title.includes(word) || category.includes(word))) return false;
+  if (needs.some(word => title.includes(word) || category.includes(word))) return true;
+
+  return service?.requires_manuscript_info === true;
+};
