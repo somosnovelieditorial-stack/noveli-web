@@ -88,10 +88,61 @@ export default function ServiceDetailPage({ services = [] }) {
                 />
               </div>
             )}
-            <div style={{ marginTop: '12px', textAlign: 'center' }}>
-              <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-sans)', fontWeight: 600, letterSpacing: '0.08em', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                Ficha Técnica Noveli • {service.category || 'Servicio'}
-              </span>
+            {/* Ficha Técnica Compacta */}
+            <div className="ficha-tecnica-compact" style={{
+              marginTop: '16px',
+              backgroundColor: '#FAFAF7',
+              border: '1px solid #E5E5E5',
+              borderTop: '2px solid #C7943A',
+              padding: '16px',
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+            }}>
+              <h4 style={{ 
+                fontFamily: 'var(--font-sans)', 
+                fontSize: '0.68rem', 
+                fontWeight: 700, 
+                letterSpacing: '0.08em', 
+                color: '#C7943A', 
+                textTransform: 'uppercase', 
+                margin: '0 0 10px 0',
+                borderBottom: '1px dashed #E5E5E5',
+                paddingBottom: '6px'
+              }}>
+                Ficha Técnica
+              </h4>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '8px 12px',
+                fontSize: '0.78rem',
+                fontFamily: 'var(--font-serif-body)',
+                color: '#555555'
+              }}>
+                <div>
+                  <span style={{ fontWeight: 600, color: '#050505' }}>Categoría:</span> {service.category || 'Servicio'}
+                </div>
+                <div>
+                  <span style={{ fontWeight: 600, color: '#050505' }}>Modalidad:</span> {(() => {
+                    const cat = String(service.category || '').toLowerCase();
+                    if (cat.includes('digital') || cat.includes('epub')) return 'Digital';
+                    if (cat.includes('diseño') || cat.includes('portada')) return 'Diseño';
+                    if (cat.includes('impresión') || cat.includes('producción')) return 'Producción';
+                    return 'Editorial';
+                  })()}
+                </div>
+                <div>
+                  <span style={{ fontWeight: 600, color: '#050505' }}>Manuscrito:</span> {requiresManuscriptInfo ? 'Sí' : 'No'}
+                </div>
+                <div>
+                  <span style={{ fontWeight: 600, color: '#050505' }}>Cotización:</span> {requiresManuscriptInfo ? 'Por extensión' : 'Personalizada'}
+                </div>
+                {service.estimated_time && (
+                  <div style={{ gridColumn: 'span 2', borderTop: '1px dashed #E5E5E5', paddingTop: '6px', marginTop: '2px', fontSize: '0.74rem' }}>
+                    ⏳ <strong>Tiempo estimado:</strong> {service.estimated_time}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
