@@ -308,9 +308,9 @@ export default function ServiceDetailPage({ services = [] }) {
           background-color: #FFFFFF;
           border: 1px solid rgba(199, 148, 58, 0.25);
           border-radius: 12px;
-          padding: 28px;
+          padding: 24px;
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-          max-width: 340px;
+          max-width: 320px;
           position: sticky;
           top: 96px;
           margin-left: auto;
@@ -332,7 +332,7 @@ export default function ServiceDetailPage({ services = [] }) {
           margin-bottom: 12px;
           white-space: nowrap;
           line-height: 1.1;
-          font-size: 34px;
+          font-size: 32px;
         }
         .price-card-note {
           font-size: 0.78rem;
@@ -343,7 +343,7 @@ export default function ServiceDetailPage({ services = [] }) {
         }
         .btn-price-card-action {
           width: 100%;
-          height: 48px;
+          height: 46px;
           background-color: #050505;
           color: #FFFFFF;
           border: 1px solid #050505;
