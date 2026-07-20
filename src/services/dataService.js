@@ -245,76 +245,214 @@ export const fallbackData = {
   heroQuickServices: []
 }
 
+// LocalStorage caching helpers
+const CACHE_TTL_SECONDS = import.meta.env.DEV ? 600 : 1800;
+
+function getCachedItem(key) {
+  try {
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+    const { val, expiry } = JSON.parse(cached);
+    if (Date.now() > expiry) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    return val;
+  } catch (e) {
+    return null;
+  }
+}
+
+function setCachedItem(key, val) {
+  try {
+    const expiry = Date.now() + (CACHE_TTL_SECONDS * 1000);
+    localStorage.setItem(key, JSON.stringify({ val, expiry }));
+  } catch (e) {
+    // Ignore quota errors or disabled localStorage
+  }
+}
+
+// Timeout helper for Supabase promises
+function withTimeout(promise, timeoutMs = 2500, label = 'Query') {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Timeout: ${label} demoró más de ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    promise.then(
+      (res) => {
+        clearTimeout(timer);
+        resolve(res);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
+// Return cached data immediately if any is available
+export function getCachedWebsiteData() {
+  const cachedSettings = getCachedItem('noveli_settings_cache');
+  const cachedHero = getCachedItem('noveli_hero_cache');
+  const cachedServices = getCachedItem('noveli_services_cache');
+  const cachedBooks = getCachedItem('noveli_books_cache');
+  const cachedFooter = getCachedItem('noveli_footer_cache');
+
+  if (!cachedSettings && !cachedHero && !cachedServices && !cachedBooks && !cachedFooter) {
+    return null;
+  }
+
+  const data = JSON.parse(JSON.stringify(fallbackData));
+  if (cachedSettings) data.settings = cachedSettings;
+  if (cachedHero) {
+    data.heroSettings = cachedHero.heroSettings || data.heroSettings;
+    data.heroQuickServices = cachedHero.heroQuickServices || data.heroQuickServices;
+  }
+  if (cachedServices) data.services = cachedServices;
+  if (cachedBooks) {
+    data.books = cachedBooks.books || data.books;
+    data.bookCategories = cachedBooks.bookCategories || data.bookCategories;
+  }
+  if (cachedFooter) {
+    data.footerSettings = cachedFooter.footerSettings || data.footerSettings;
+    data.footerGallery = cachedFooter.footerGallery || data.footerGallery;
+  }
+
+  return data;
+}
+
 export async function fetchWebsiteData() {
-  // Create a deep copy of fallbackData to avoid side-effects
-  const data = JSON.parse(JSON.stringify(fallbackData))
-  data.servicesError = null
-  data.booksError = null
+  const data = JSON.parse(JSON.stringify(fallbackData));
+  data.servicesError = null;
+  data.booksError = null;
 
   if (!supabase) {
-    console.log("Using fallback data (Supabase not initialized)")
-    return data
-  }
-
-  // 1. Fetch settings
-  try {
-    const { data: row, error } = await supabase
-      .from('website_settings')
-      .select('*')
-      .eq('active', true)
-      .limit(1)
-      .maybeSingle()
-
-    if (error) {
-      console.error('Error cargando website_settings:', error);
-      data.settings = { ...defaultWebsiteSettings, hero_title: fallbackData.settings.hero_title, hero_subtitle: fallbackData.settings.hero_subtitle };
-    } else if (!row) {
-      console.log("website_settings returned no row, using defaultWebsiteSettings");
-      data.settings = { ...defaultWebsiteSettings, hero_title: fallbackData.settings.hero_title, hero_subtitle: fallbackData.settings.hero_subtitle };
-    } else {
-      data.settings.hero_title = row.hero_title || row.title || row.titulo || fallbackData.settings.hero_title
-      data.settings.hero_subtitle = row.hero_subtitle || row.subtitle || row.subtitulo || fallbackData.settings.hero_subtitle
-      data.settings.brand_name = row.brand_name || defaultWebsiteSettings.brand_name
-      data.settings.brand_subtitle = row.brand_subtitle || defaultWebsiteSettings.brand_subtitle
-      data.settings.logo_url = row.logo_url || defaultWebsiteSettings.logo_url
-      data.settings.logo_dark_url = row.logo_dark_url || defaultWebsiteSettings.logo_dark_url
-      data.settings.logo_light_url = row.logo_light_url || defaultWebsiteSettings.logo_light_url
-      data.settings.favicon_url = row.favicon_url || defaultWebsiteSettings.favicon_url
-      
-      // Populate contact info from settings if available
-      const email = row.contact_email || row.email || row.correo || row.correo_contacto
-      if (email) data.links.email = email.replace('mailto:', '')
-
-      const instagram = row.instagram || row.instagram_url
-      if (instagram) data.links.instagram = instagram
-
-      const contact = row.contact_url || row.contact_link || row.contact || row.contacto || row.phone || row.telefono || row.whatsapp
-      if (contact) data.links.contact = contact
+    if (import.meta.env.DEV) {
+      console.log("Using fallback data (Supabase not initialized)");
     }
-  } catch (err) {
-    console.error('Error cargando website_settings:', err);
-    data.settings = { ...defaultWebsiteSettings, hero_title: fallbackData.settings.hero_title, hero_subtitle: fallbackData.settings.hero_subtitle };
+    return data;
   }
 
-  // 2. Fetch services
-  try {
-    console.log('ENV URL:', import.meta.env.VITE_SUPABASE_URL);
-    console.log('Supabase client existe:', !!supabase);
+  const TIMEOUT_LIMIT = 2500;
 
-    const { data: servicesData, error } = await supabase
-      .from('website_services')
-      .select('id, organization_id, title, short_description, full_description, price_from, currency, category, featured, visible_on_website, active, display_order, image_url, background_url, icon_name, color_theme, created_at, includes, not_included, process_steps, estimated_time, requires_manuscript_info, quote_note')
-      .order('display_order', { ascending: true })
-      .order('created_at', { ascending: true })
+  const queryPromises = [
+    // 0: Settings
+    withTimeout(
+      supabase.from('website_settings').select('*').eq('active', true).limit(1).maybeSingle(),
+      TIMEOUT_LIMIT,
+      'Settings'
+    ),
+    // 1: Services
+    withTimeout(
+      supabase.from('website_services').select('id, organization_id, title, short_description, full_description, price_from, currency, category, featured, visible_on_website, active, display_order, image_url, background_url, icon_name, color_theme, created_at, includes, not_included, process_steps, estimated_time, requires_manuscript_info, quote_note').order('display_order', { ascending: true }).order('created_at', { ascending: true }),
+      TIMEOUT_LIMIT,
+      'Services'
+    ),
+    // 2: Book Categories
+    withTimeout(
+      supabase.from('website_book_categories').select('*').eq('active', true).order('display_order', { ascending: true }),
+      TIMEOUT_LIMIT,
+      'Book Categories'
+    ),
+    // 3: Book Category Links
+    withTimeout(
+      supabase.from('website_book_category_links').select('*'),
+      TIMEOUT_LIMIT,
+      'Category Links'
+    ),
+    // 4: Books
+    withTimeout(
+      supabase.from('website_books').select('id,organization_id,title,author,cover_url,cover_image_url,short_description,genre,status,featured,visible_on_website,sale_url,sale_platform,display_order,created_at,active,book_origin,purchase_type,author_purchase_url,noveli_purchase_url,is_featured,is_new,is_coming_soon,visible').order('display_order', { ascending: true }).order('created_at', { ascending: false }),
+      TIMEOUT_LIMIT,
+      'Books'
+    ),
+    // 5: Sections
+    withTimeout(
+      supabase.from('website_sections').select('*').eq('active', true).order('display_order', { ascending: true }),
+      TIMEOUT_LIMIT,
+      'Sections'
+    ),
+    // 6: Links
+    withTimeout(
+      supabase.from('website_links').select('*').eq('active', true).order('display_order', { ascending: true }),
+      TIMEOUT_LIMIT,
+      'Links'
+    ),
+    // 7: Footer Settings
+    withTimeout(
+      supabase.from('website_footer_settings').select('contact_title, contact_email, contact_location, contact_description, instagram_title, instagram_url, instagram_enabled, active').eq('active', true).limit(1),
+      TIMEOUT_LIMIT,
+      'Footer Settings'
+    ),
+    // 8: Footer Gallery
+    withTimeout(
+      supabase.from('website_footer_gallery').select('image_url, title, link_url, display_order, active').eq('active', true).order('display_order', { ascending: true }),
+      TIMEOUT_LIMIT,
+      'Footer Gallery'
+    ),
+    // 9: Hero Settings
+    withTimeout(
+      supabase.from('website_hero_settings').select('id, eyebrow, title, highlighted_word, subtitle, primary_button_text, primary_button_url, secondary_button_text, secondary_button_url, background_image_url, side_image_url, featured_book_id, show_featured_book, active').eq('active', true).limit(1),
+      TIMEOUT_LIMIT,
+      'Hero Settings'
+    ),
+    // 10: Hero Quick Services
+    withTimeout(
+      supabase.from('website_hero_quick_services').select('label, icon_name, link_url, display_order, active').eq('active', true).order('display_order', { ascending: true }),
+      TIMEOUT_LIMIT,
+      'Hero Quick Services'
+    )
+  ];
 
-    console.log('Error servicios:', error);
-    console.log('Data servicios:', servicesData);
+  const results = await Promise.allSettled(queryPromises);
 
-    if (error) throw error
+  const getResult = (index) => {
+    const res = results[index];
+    if (res.status === 'fulfilled' && res.value && !res.value.error) {
+      return res.value.data;
+    }
+    if (import.meta.env.DEV) {
+      if (res.status === 'rejected') {
+        console.warn(`Query index ${index} failed:`, res.reason);
+      } else if (res.value && res.value.error) {
+        console.warn(`Query index ${index} error:`, res.value.error);
+      }
+    }
+    return null;
+  };
 
-    // Map and filter active/visible on website (programmatically to tolerate nulls)
-    const activeServices = (servicesData || []).filter(row => row.active !== false && row.visible_on_website !== false)
+  // 1. Map settings
+  const settingsData = getResult(0);
+  if (settingsData) {
+    const row = settingsData;
+    data.settings.hero_title = row.hero_title || row.title || row.titulo || fallbackData.settings.hero_title;
+    data.settings.hero_subtitle = row.hero_subtitle || row.subtitle || row.subtitulo || fallbackData.settings.hero_subtitle;
+    data.settings.brand_name = row.brand_name || defaultWebsiteSettings.brand_name;
+    data.settings.brand_subtitle = row.brand_subtitle || defaultWebsiteSettings.brand_subtitle;
+    data.settings.logo_url = row.logo_url || defaultWebsiteSettings.logo_url;
+    data.settings.logo_dark_url = row.logo_dark_url || defaultWebsiteSettings.logo_dark_url;
+    data.settings.logo_light_url = row.logo_light_url || defaultWebsiteSettings.logo_light_url;
+    data.settings.favicon_url = row.favicon_url || defaultWebsiteSettings.favicon_url;
 
+    const email = row.contact_email || row.email || row.correo || row.correo_contacto;
+    if (email) data.links.email = email.replace('mailto:', '');
+    const instagram = row.instagram || row.instagram_url;
+    if (instagram) data.links.instagram = instagram;
+    const contact = row.contact_url || row.contact_link || row.contact || row.contacto || row.phone || row.telefono || row.whatsapp;
+    if (contact) data.links.contact = contact;
+
+    setCachedItem('noveli_settings_cache', data.settings);
+  } else {
+    const cachedSettings = getCachedItem('noveli_settings_cache');
+    if (cachedSettings) data.settings = cachedSettings;
+  }
+
+  // 2. Map services
+  const servicesData = getResult(1);
+  if (servicesData) {
+    const activeServices = (servicesData || []).filter(row => row.active !== false && row.visible_on_website !== false);
     data.services = activeServices.map(row => ({
       id: row.id,
       organization_id: row.organization_id,
@@ -322,7 +460,7 @@ export async function fetchWebsiteData() {
       category: row.category || 'Edición',
       short_description: row.short_description || '',
       full_description: row.full_description || '',
-      description: row.short_description || row.full_description || '', // compatible with App.jsx
+      description: row.short_description || row.full_description || '',
       price_from: row.price_from,
       currency: row.currency || 'CLP',
       featured: row.featured === true,
@@ -333,81 +471,43 @@ export async function fetchWebsiteData() {
       icon_name: row.icon_name || '',
       color_theme: row.color_theme || '',
       display_order: row.display_order,
-      created_at: row.created_at
-    }))
-  } catch (err) {
-    console.error("Error al cargar servicios desde Supabase:", err);
-    data.servicesError = err.message || String(err);
-    data.services = [];
-    console.warn("Failed to fetch website_services, using fallback:", err.message || err)
+      created_at: row.created_at,
+      includes: row.includes || '',
+      not_included: row.not_included || '',
+      process_steps: row.process_steps || '',
+      estimated_time: row.estimated_time || '',
+      requires_manuscript_info: row.requires_manuscript_info === true,
+      quote_note: row.quote_note || ''
+    }));
+
+    setCachedItem('noveli_services_cache', data.services);
+  } else {
+    const cachedServices = getCachedItem('noveli_services_cache');
+    if (cachedServices) data.services = cachedServices;
   }
 
-  // 3. Fetch books, categories, and category links
-  try {
-    // 3a. Fetch book categories
-    let categories = []
-    try {
-      const { data: catData, error: catError } = await supabase
-        .from('website_book_categories')
-        .select('*')
-        .eq('active', true)
-        .order('display_order', { ascending: true })
-      if (!catError && catData) {
-        categories = catData
-      }
-    } catch (catErr) {
-      console.warn("Failed to fetch website_book_categories:", catErr)
-    }
+  // 3. Map books and categories
+  const categoriesData = getResult(2);
+  const categoryLinksData = getResult(3);
+  const booksData = getResult(4);
 
-    // 3b. Fetch book category links
-    let categoryLinks = []
-    try {
-      const { data: linkData, error: linkError } = await supabase
-        .from('website_book_category_links')
-        .select('*')
-      if (!linkError && linkData) {
-        categoryLinks = linkData
-      }
-    } catch (linkErr) {
-      console.warn("Failed to fetch website_book_category_links:", linkErr)
-    }
+  const finalCategories = categoriesData || [];
+  const finalCategoryLinks = categoryLinksData || [];
 
-    // 3c. Fetch books (only active/visible, ordered display_order, then created_at)
-    const { data: booksData, error } = await supabase
-      .from('website_books')
-      .select('id,organization_id,title,author,cover_url,cover_image_url,short_description,genre,status,featured,visible_on_website,sale_url,sale_platform,display_order,created_at,active,book_origin,purchase_type,author_purchase_url,noveli_purchase_url,is_featured,is_new,is_coming_soon,visible')
-      .order('display_order', { ascending: true })
-      .order('created_at', { ascending: false })
-
-    if (import.meta.env.DEV) {
-      console.log('Error libros:', error)
-      console.log('Libros crudos desde Supabase:', booksData)
-    }
-
-    if (error) {
-      data.booksError = error.message;
-      throw error;
-    }
-
-    // Map activeBooks to empty array first, to clear fallback if Supabase responded successfully
-    const activeBooks = (booksData || []).filter(row => row.visible !== false && row.active !== false && row.visible_on_website !== false)
-
-    if (import.meta.env.DEV) {
-      console.log('Libros visibles:', activeBooks)
-    }
-
+  if (booksData) {
+    const activeBooks = booksData.filter(row => row.visible !== false && row.active !== false && row.visible_on_website !== false);
     data.books = activeBooks.map(row => {
-      const linkedCatIds = categoryLinks
+      const linkedCatIds = finalCategoryLinks
         .filter(link => link.book_id === row.id)
-        .map(link => link.category_id)
+        .map(link => link.category_id);
       
-      const bookCats = categories.filter(cat => linkedCatIds.includes(cat.id))
+      const bookCats = finalCategories.filter(cat => linkedCatIds.includes(cat.id));
 
       return {
         id: row.id,
         organization_id: row.organization_id,
-        title: row.title || row.titulo || row.nombre || 'Libro sin título',
-        author: row.author || row.autor || 'Autor desconocido',
+        title: row.title || 'Libro sin título',
+        author: row.author || 'Autor desconocido',
         short_description: row.short_description || '',
         genre: row.genre || '',
         status: row.status || '',
@@ -429,186 +529,142 @@ export async function fetchWebsiteData() {
         display_order: row.display_order,
         created_at: row.created_at,
         categories: bookCats
+      };
+    });
+
+    data.bookCategories = finalCategories;
+
+    setCachedItem('noveli_books_cache', {
+      books: data.books,
+      bookCategories: data.bookCategories
+    });
+  } else {
+    const cachedBooks = getCachedItem('noveli_books_cache');
+    if (cachedBooks) {
+      data.books = cachedBooks.books;
+      data.bookCategories = cachedBooks.bookCategories;
+    }
+  }
+
+  // 4. Map sections
+  const sectionsData = getResult(5);
+  if (sectionsData) {
+    sectionsData.forEach(row => {
+      const identifier = (row.key || row.slug || row.identifier || row.name || row.title || '').toLowerCase();
+      if (identifier) {
+        data.sections[identifier] = {
+          title: row.title || row.titulo || '',
+          content: row.content || row.texto || row.contenido || ''
+        };
       }
-    })
-
-    if (categories.length > 0) {
-      data.bookCategories = categories
-    } else {
-      data.bookCategories = []
-    }
-
-    if (import.meta.env.DEV) {
-      console.log('Libros cargados desde Supabase:', data.books)
-    }
-  } catch (err) {
-    console.error("Error al cargar libros desde Supabase:", err)
-    data.booksError = err.message || String(err);
-    console.warn("Failed to fetch website_books, using fallback:", err.message || err)
+    });
   }
 
-  // 4. Fetch sections (for nosotros and other sections)
-  try {
-    const { data: sectionsData, error } = await supabase
-      .from('website_sections')
-      .select('*')
-      .eq('active', true)
-      .order('display_order', { ascending: true })
-
-    if (error) throw error
-
-    if (sectionsData && sectionsData.length > 0) {
-      sectionsData.forEach(row => {
-        const identifier = (row.key || row.slug || row.identifier || row.name || row.title || '').toLowerCase()
-        if (identifier) {
-          data.sections[identifier] = {
-            title: row.title || row.titulo || (data.sections[identifier] ? data.sections[identifier].title : ''),
-            content: row.content || row.texto || row.contenido || (data.sections[identifier] ? data.sections[identifier].content : '')
-          }
-        }
-      })
-    }
-  } catch (err) {
-    console.warn("Failed to fetch website_sections, using fallback:", err.message || err)
-  }
-
-  // 5. Fetch links
-  try {
-    const { data: linksData, error } = await supabase
-      .from('website_links')
-      .select('*')
-      .eq('active', true)
-      .order('display_order', { ascending: true })
-
-    if (error) throw error
-
-    if (linksData && linksData.length > 0) {
-      linksData.forEach(row => {
-        const key = (row.key || row.type || row.name || '').toLowerCase()
-        const url = row.url || row.value || ''
-
-        if (key === 'email' || key === 'correo' || url.includes('mailto:')) {
-          data.links.email = url.replace('mailto:', '')
-        } else if (key === 'instagram' || url.includes('instagram.com')) {
-          data.links.instagram = url
-        } else if (key === 'contacto' || key === 'contact' || key === 'whatsapp') {
-          data.links.contact = url
-        }
-      })
-    }
-  } catch (err) {
-    console.warn("Failed to fetch website_links, using fallback:", err.message || err)
-  }
-
-  // 6. Fetch footer settings
-  try {
-    const { data: footerData, error } = await supabase
-      .from('website_footer_settings')
-      .select('contact_title, contact_email, contact_location, contact_description, instagram_title, instagram_url, instagram_enabled, active')
-      .eq('active', true)
-      .limit(1)
-
-    if (error) throw error
-
-    if (footerData && footerData.length > 0) {
-      const row = footerData[0]
-      data.footerSettings = {
-        contact_title: row.contact_title || fallbackData.footerSettings.contact_title,
-        contact_email: row.contact_email || fallbackData.footerSettings.contact_email,
-        contact_location: row.contact_location || fallbackData.footerSettings.contact_location,
-        contact_description: row.contact_description || fallbackData.footerSettings.contact_description,
-        instagram_title: row.instagram_title || fallbackData.footerSettings.instagram_title,
-        instagram_url: row.instagram_url || fallbackData.footerSettings.instagram_url,
-        instagram_enabled: row.instagram_enabled !== false
+  // 5. Map links
+  const linksData = getResult(6);
+  if (linksData) {
+    linksData.forEach(row => {
+      const key = (row.key || row.type || row.name || '').toLowerCase();
+      const url = row.url || row.value || '';
+      if (key === 'email' || key === 'correo' || url.includes('mailto:')) {
+        data.links.email = url.replace('mailto:', '');
+      } else if (key === 'instagram' || url.includes('instagram.com')) {
+        data.links.instagram = url;
+      } else if (key === 'contacto' || key === 'contact' || key === 'whatsapp') {
+        data.links.contact = url;
       }
-      
-      // Keep main links aligned with footer links if present
-      if (row.contact_email) data.links.email = row.contact_email.replace('mailto:', '')
-      if (row.instagram_url) data.links.instagram = row.instagram_url
-    }
-  } catch (err) {
-    console.warn("Failed to fetch website_footer_settings, using fallback:", err.message || err)
+    });
   }
 
-  // 7. Fetch footer gallery
-  try {
-    const { data: galleryData, error } = await supabase
-      .from('website_footer_gallery')
-      .select('image_url, title, link_url, display_order, active')
-      .eq('active', true)
-      .order('display_order', { ascending: true })
+  // 6. Map footer settings
+  const footerSettingsData = getResult(7);
+  const footerGalleryData = getResult(8);
 
-    if (error) throw error
-
-    if (galleryData && galleryData.length > 0) {
-      data.footerGallery = galleryData.map(row => ({
-        image_url: row.image_url || '',
-        title: row.title || '',
-        link_url: row.link_url || '',
-        display_order: row.display_order,
-        active: row.active !== false
-      }))
-    }
-  } catch (err) {
-    console.warn("Failed to fetch website_footer_gallery, using fallback:", err.message || err)
+  if (footerSettingsData && footerSettingsData.length > 0) {
+    const row = footerSettingsData[0];
+    data.footerSettings = {
+      contact_title: row.contact_title || fallbackData.footerSettings.contact_title,
+      contact_email: row.contact_email || fallbackData.footerSettings.contact_email,
+      contact_location: row.contact_location || fallbackData.footerSettings.contact_location,
+      contact_description: row.contact_description || fallbackData.footerSettings.contact_description,
+      instagram_title: row.instagram_title || fallbackData.footerSettings.instagram_title,
+      instagram_url: row.instagram_url || fallbackData.footerSettings.instagram_url,
+      instagram_enabled: row.instagram_enabled !== false
+    };
+    if (row.contact_email) data.links.email = row.contact_email.replace('mailto:', '');
+    if (row.instagram_url) data.links.instagram = row.instagram_url;
   }
 
-  // 8. Fetch hero settings
-  try {
-    const { data: heroData, error } = await supabase
-      .from('website_hero_settings')
-      .select('id, eyebrow, title, highlighted_word, subtitle, primary_button_text, primary_button_url, secondary_button_text, secondary_button_url, background_image_url, side_image_url, featured_book_id, show_featured_book, active')
-      .eq('active', true)
-      .limit(1)
-
-    if (error) throw error
-
-    if (heroData && heroData.length > 0) {
-      const row = heroData[0]
-      data.heroSettings = {
-        eyebrow: row.eyebrow || fallbackData.heroSettings.eyebrow,
-        title: row.title || fallbackData.heroSettings.title,
-        highlighted_word: row.highlighted_word || fallbackData.heroSettings.highlighted_word,
-        subtitle: row.subtitle || fallbackData.heroSettings.subtitle,
-        primary_button_text: row.primary_button_text || fallbackData.heroSettings.primary_button_text,
-        primary_button_url: row.primary_button_url || fallbackData.heroSettings.primary_button_url,
-        secondary_button_text: row.secondary_button_text || fallbackData.heroSettings.secondary_button_text,
-        secondary_button_url: row.secondary_button_url || fallbackData.heroSettings.secondary_button_url,
-        background_image_url: row.background_image_url || fallbackData.heroSettings.background_image_url,
-        side_image_url: row.side_image_url || fallbackData.heroSettings.side_image_url,
-        featured_book_id: row.featured_book_id || fallbackData.heroSettings.featured_book_id,
-        show_featured_book: row.show_featured_book !== false,
-        active: row.active !== false
-      }
-    }
-  } catch (err) {
-    console.warn("Failed to fetch website_hero_settings, using fallback:", err.message || err)
+  if (footerGalleryData) {
+    data.footerGallery = footerGalleryData.map(row => ({
+      image_url: row.image_url || '',
+      title: row.title || '',
+      link_url: row.link_url || '',
+      display_order: row.display_order,
+      active: row.active !== false
+    }));
   }
 
-  // 9. Fetch hero quick services
-  try {
-    const { data: qData, error } = await supabase
-      .from('website_hero_quick_services')
-      .select('label, icon_name, link_url, display_order, active')
-      .eq('active', true)
-      .order('display_order', { ascending: true })
-
-    if (error) throw error
-
-    if (qData && qData.length > 0) {
-      data.heroQuickServices = qData.map(row => ({
-        label: row.label || '',
-        icon_name: row.icon_name || 'feather',
-        link_url: row.link_url || '',
-        display_order: row.display_order,
-        active: row.active !== false
-      }))
+  if (footerSettingsData || footerGalleryData) {
+    setCachedItem('noveli_footer_cache', {
+      footerSettings: data.footerSettings,
+      footerGallery: data.footerGallery
+    });
+  } else {
+    const cachedFooter = getCachedItem('noveli_footer_cache');
+    if (cachedFooter) {
+      data.footerSettings = cachedFooter.footerSettings;
+      data.footerGallery = cachedFooter.footerGallery;
     }
-  } catch (err) {
-    console.warn("Failed to fetch website_hero_quick_services, using fallback:", err.message || err)
   }
 
-  return data
+  // 7. Map hero settings
+  const heroSettingsData = getResult(9);
+  const heroQuickServicesData = getResult(10);
+
+  if (heroSettingsData && heroSettingsData.length > 0) {
+    const row = heroSettingsData[0];
+    data.heroSettings = {
+      eyebrow: row.eyebrow || fallbackData.heroSettings.eyebrow,
+      title: row.title || fallbackData.heroSettings.title,
+      highlighted_word: row.highlighted_word || fallbackData.heroSettings.highlighted_word,
+      subtitle: row.subtitle || fallbackData.heroSettings.subtitle,
+      primary_button_text: row.primary_button_text || fallbackData.heroSettings.primary_button_text,
+      primary_button_url: row.primary_button_url || fallbackData.heroSettings.primary_button_url,
+      secondary_button_text: row.secondary_button_text || fallbackData.heroSettings.secondary_button_text,
+      secondary_button_url: row.secondary_button_url || fallbackData.heroSettings.secondary_button_url,
+      background_image_url: row.background_image_url || fallbackData.heroSettings.background_image_url,
+      side_image_url: row.side_image_url || fallbackData.heroSettings.side_image_url,
+      featured_book_id: row.featured_book_id || fallbackData.heroSettings.featured_book_id,
+      show_featured_book: row.show_featured_book !== false,
+      active: row.active !== false
+    };
+  }
+
+  if (heroQuickServicesData) {
+    data.heroQuickServices = heroQuickServicesData.map(row => ({
+      label: row.label || '',
+      icon_name: row.icon_name || 'feather',
+      link_url: row.link_url || '',
+      display_order: row.display_order,
+      active: row.active !== false
+    }));
+  }
+
+  if (heroSettingsData || heroQuickServicesData) {
+    setCachedItem('noveli_hero_cache', {
+      heroSettings: data.heroSettings,
+      heroQuickServices: data.heroQuickServices
+    });
+  } else {
+    const cachedHero = getCachedItem('noveli_hero_cache');
+    if (cachedHero) {
+      data.heroSettings = cachedHero.heroSettings;
+      data.heroQuickServices = cachedHero.heroQuickServices;
+    }
+  }
+
+  return data;
 }
 
 export function getBookCover(book) {

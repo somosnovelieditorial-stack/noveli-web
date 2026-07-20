@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function BookCover({ title, author, coverUrl, index }) {
+export default function BookCover({ title, author, coverUrl, index, loading = 'lazy', fetchpriority = 'auto' }) {
   const [imageError, setImageError] = useState(false);
   const gradientClass = `cover-${index % 4}`;
 
@@ -11,6 +11,9 @@ export default function BookCover({ title, author, coverUrl, index }) {
           src={coverUrl}
           alt={`Portada de ${title}`}
           className="book-cover-image"
+          loading={loading}
+          decoding={loading === 'eager' ? 'async' : 'auto'}
+          {...(fetchpriority !== 'auto' ? { fetchpriority } : {})}
           onError={() => setImageError(true)}
         />
       ) : (

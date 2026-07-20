@@ -4,6 +4,7 @@ import BookCover from '../components/BookCover';
 import BookDetailModal from '../components/BookDetailModal';
 import ServiceCard from '../components/ServiceCard';
 import BookFilterDropdown from '../components/BookFilterDropdown';
+import EditorialSkeleton from '../components/EditorialSkeleton';
 import { getBookCover, formatServicePrice, getBookAction } from '../services/dataService';
 
 const getDecorClass = (category = '') => {
@@ -132,7 +133,7 @@ const renderCardHeader = (service) => {
   );
 };
 
-export default function HomePage({ data, handleReload }) {
+export default function HomePage({ data, loaded, handleReload }) {
   const { services, books, sections, links, bookCategories = [], heroSettings, heroQuickServices } = data;
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedBook, setSelectedBook] = useState(null);
@@ -347,6 +348,9 @@ export default function HomePage({ data, handleReload }) {
                             src={sideImageUrl} 
                             style={{ maxWidth: '90%', maxHeight: '420px', borderRadius: '8px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', objectFit: 'cover' }} 
                             alt="Visual Editorial" 
+                            loading="eager"
+                            decoding="async"
+                            fetchpriority="high"
                           />
                         </div>
                       );
@@ -363,6 +367,8 @@ export default function HomePage({ data, handleReload }) {
                             author={targetBook.author} 
                             coverUrl={featuredBookCover} 
                             index={0} 
+                            loading="eager"
+                            fetchpriority="high"
                           />
                         </div>
                       );
@@ -383,6 +389,8 @@ export default function HomePage({ data, handleReload }) {
                             author="Noveli Editorial" 
                             coverUrl="" 
                             index={0} 
+                            loading="eager"
+                            fetchpriority="high"
                           />
                         </div>
                       );
@@ -419,7 +427,9 @@ export default function HomePage({ data, handleReload }) {
             </button>
 
             <div className="services-carousel" ref={servicesCarouselRef}>
-              {(!services || services.length === 0) ? (
+              {!loaded ? (
+                <EditorialSkeleton type="card" count={3} />
+              ) : (!services || services.length === 0) ? (
                 <p className="empty-services-message" style={{ textAlign: 'center', width: '100%', padding: '40px 0', fontStyle: 'italic', color: 'var(--text-muted)', fontFamily: 'var(--font-serif-body)' }}>
                   Aún no hay servicios visibles.
                 </p>
@@ -462,7 +472,9 @@ export default function HomePage({ data, handleReload }) {
           </div>
           
           <div className="catalog-compact-wrapper">
-            {(!books || books.length === 0) ? (
+            {!loaded ? (
+              <EditorialSkeleton type="books" count={3} />
+            ) : (!books || books.length === 0) ? (
               <p className="empty-catalog-message" style={{ textAlign: 'center', padding: '40px 0', fontStyle: 'italic', color: 'var(--text-muted)', fontFamily: 'var(--font-serif-body)' }}>
                 Aún no hay libros publicados en el catálogo.
               </p>

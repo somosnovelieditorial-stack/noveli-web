@@ -1,13 +1,17 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { HashRouter as Router, Routes, Route, NavLink, Link, useLocation } from 'react-router-dom'
-import { fetchWebsiteData, fallbackData, getBookCover, defaultWebsiteSettings, getLogoSrc } from './services/dataService'
+import { fetchWebsiteData, getCachedWebsiteData, fallbackData, getBookCover, defaultWebsiteSettings, getLogoSrc } from './services/dataService'
 import HomePage from './pages/HomePage'
-import ServicesPage from './pages/ServicesPage'
-import BooksPage from './pages/BooksPage'
-import NosotrosPage from './pages/NosotrosPage'
-import ContactPage from './pages/ContactPage'
-import ServiceDetailPage from './pages/ServiceDetailPage'
+
+// Lazy loaded page components
+const ServicesPage = lazy(() => import('./pages/ServicesPage'))
+const BooksPage = lazy(() => import('./pages/BooksPage'))
+const NosotrosPage = lazy(() => import('./pages/NosotrosPage'))
+const ContactPage = lazy(() => import('./pages/ContactPage'))
+const ServiceDetailPage = lazy(() => import('./pages/ServiceDetailPage'))
+
 import BookCover from './components/BookCover'
+import EditorialSkeleton from './components/EditorialSkeleton'
 import SideNavigation from './components/SideNavigation'
 import ErrorBoundary from './components/ErrorBoundary'
 import './App.css'
@@ -29,8 +33,11 @@ const InstagramIcon = () => (
 )
 
 function AppContent() {
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState(fallbackData);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(() => {
+    const cached = getCachedWebsiteData();
+    return cached || fallbackData;
+  });
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const location = useLocation();
 
@@ -104,11 +111,12 @@ function AppContent() {
   const isHome = location.pathname === '/';
   const headerClass = `header header-cream-solid`;
 
-  if (loading) {
+  // No full-screen blocking loader unless it's a critical error (data is null/undefined)
+  if (!data) {
     return (
       <div className="loading-screen">
         <div className="spinner"></div>
-        <p className="loading-text">Cargando catálogo editorial...</p>
+        <p className="loading-text">Conectando con la editorial...</p>
       </div>
     );
   }
@@ -200,14 +208,21 @@ function AppContent() {
 
       {/* Pages Content Container */}
       <main className="main-content-flow">
-        <Routes>
-          <Route path="/" element={<HomePage data={data} handleReload={handleReload} />} />
-          <Route path="/servicios" element={<ServicesPage services={services} servicesError={data.servicesError} />} />
-          <Route path="/servicios/:id" element={<ServiceDetailPage services={services} />} />
-          <Route path="/libros" element={<BooksPage books={books} bookCategories={data.bookCategories} booksError={data.booksError} handleReload={handleReload} />} />
-          <Route path="/nosotros" element={<NosotrosPage sections={sections} links={links} />} />
-          <Route path="/contacto" element={<ContactPage services={services} links={links} />} />
-        </Routes>
+        <Suspense fallback={
+          <div className="container" style={{ padding: '80px 20px', textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: '#555555' }}>
+            <div className="spinner" style={{ margin: '0 auto 16px auto' }}></div>
+            Cargando sección...
+          </div>
+        }>
+          <Routes>
+            <Route path="/" element={<HomePage data={data} handleReload={handleReload} />} />
+            <Route path="/servicios" element={<ServicesPage services={services} servicesError={data.servicesError} />} />
+            <Route path="/servicios/:id" element={<ServiceDetailPage services={services} />} />
+            <Route path="/libros" element={<BooksPage books={books} bookCategories={data.bookCategories} booksError={data.booksError} handleReload={handleReload} />} />
+            <Route path="/nosotros" element={<NosotrosPage sections={sections} links={links} />} />
+            <Route path="/contacto" element={<ContactPage services={services} links={links} />} />
+          </Routes>
+        </Suspense>
       </main>
 
       {/* 7. Footer */}
@@ -299,6 +314,9 @@ function AppContent() {
                 
                 <div className="footer-instagram-grid">
                   {(() => {
+                    if (!loaded) {
+                      return <EditorialSkeleton type="gallery" count={6} />;
+                    }
                     const activeGallery = (footerGallery || []).filter(item => item.active !== false);
                     if (activeGallery.length > 0) {
                       return activeGallery.slice(0, 6).map((item, idx) => {
@@ -308,6 +326,8 @@ function AppContent() {
                               src={item.image_url} 
                               alt={item.title || ""} 
                               style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                              loading="lazy"
+                              decoding="async"
                             />
                           </div>
                         );

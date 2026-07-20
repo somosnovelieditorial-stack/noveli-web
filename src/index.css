@@ -2397,3 +2397,20 @@ html, body {
     width: 100px !important;
   }
 }
+
+/* Skeleton Pulse Animation */
+.skeleton-pulse {
+  animation: skeleton-pulsing 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulsing {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
