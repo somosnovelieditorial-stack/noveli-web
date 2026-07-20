@@ -38,6 +38,7 @@ function AppContent() {
     const cached = getCachedWebsiteData();
     return cached || fallbackData;
   });
+  const [loaded, setLoaded] = useState(() => !!getCachedWebsiteData());
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const location = useLocation();
 
@@ -69,6 +70,7 @@ function AppContent() {
       const result = await fetchWebsiteData();
       if (result) {
         setData(result);
+        setLoaded(true);
       }
     } catch (err) {
       console.error("Critical error loading data:", err);
@@ -215,7 +217,7 @@ function AppContent() {
           </div>
         }>
           <Routes>
-            <Route path="/" element={<HomePage data={data} handleReload={handleReload} />} />
+            <Route path="/" element={<HomePage data={data} loaded={loaded} handleReload={handleReload} />} />
             <Route path="/servicios" element={<ServicesPage services={services} servicesError={data.servicesError} />} />
             <Route path="/servicios/:id" element={<ServiceDetailPage services={services} />} />
             <Route path="/libros" element={<BooksPage books={books} bookCategories={data.bookCategories} booksError={data.booksError} handleReload={handleReload} />} />
