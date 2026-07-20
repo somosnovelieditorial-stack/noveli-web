@@ -12,6 +12,8 @@ const ServiceDetailPage = lazy(() => import('./pages/ServiceDetailPage'))
 
 import BookCover from './components/BookCover'
 import EditorialSkeleton from './components/EditorialSkeleton'
+import SideNavigation from './components/SideNavigation'
+import ErrorBoundary from './components/ErrorBoundary'
 import Header from './components/Header'
 import Footer from './components/Footer'
 
