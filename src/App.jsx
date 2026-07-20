@@ -58,9 +58,10 @@ function AppContent() {
       try {
         const { data: resData, error } = await supabase
           .from('website_settings')
-          .select('brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at')
+          .select('brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at,created_at')
           .eq('active', true)
           .order('updated_at', { ascending: false, nullsFirst: false })
+          .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 

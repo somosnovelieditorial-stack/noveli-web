@@ -361,9 +361,10 @@ export async function fetchWebsiteData() {
     withTimeout(
       supabase
         .from('website_settings')
-        .select('brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at')
+        .select('brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at,created_at')
         .eq('active', true)
         .order('updated_at', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle(),
       TIMEOUT_LIMIT,
@@ -463,6 +464,7 @@ export async function fetchWebsiteData() {
     data.settings.logo_light_url = row.logo_light_url || defaultWebsiteSettings.logo_light_url;
     data.settings.favicon_url = row.favicon_url || defaultWebsiteSettings.favicon_url;
     data.settings.updated_at = row.updated_at || null;
+    data.settings.created_at = row.created_at || null;
 
     const email = row.contact_email || row.email || row.correo || row.correo_contacto;
     if (email) data.links.email = email.replace('mailto:', '');

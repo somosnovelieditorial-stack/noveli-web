@@ -2,13 +2,28 @@ import { getLogoSrc, normalizeWebsiteSettings } from '../services/dataService';
 
 export default function BrandLogo({ settings, variant = 'dark' }) {
   const normalizedSettings = normalizeWebsiteSettings(settings);
-  const logoSrc = getLogoSrc(normalizedSettings, variant);
+
+  const cleanUrl = (value) => {
+    if (!value) return null;
+    const trimmed = String(value).trim();
+    return trimmed.length > 0 ? trimmed : null;
+  };
+
+  const logoUrl = cleanUrl(normalizedSettings?.logo_url);
+  const logoDarkUrl = cleanUrl(normalizedSettings?.logo_dark_url);
+  const logoLightUrl = cleanUrl(normalizedSettings?.logo_light_url);
+
+  const logoSrc =
+    variant === 'light'
+      ? logoLightUrl || logoUrl || logoDarkUrl
+      : logoDarkUrl || logoUrl || logoLightUrl;
 
   if (import.meta.env.DEV) {
     console.log('Website settings logo raw:', settings);
     console.table(settings);
     console.log('Website settings normalizado:', normalizedSettings);
     console.log('Logo seleccionado final:', logoSrc);
+    console.log('Logo URL limpia:', logoSrc);
   }
 
   if (logoSrc) {
