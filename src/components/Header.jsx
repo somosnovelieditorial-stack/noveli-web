@@ -16,7 +16,7 @@ export default function Header({ brandSettings, onOpenMenu }) {
         backdropFilter: 'blur(8px)', 
         backgroundColor: '#FFFFFF', 
         borderBottom: '1px solid rgba(199, 148, 58, 0.15)', 
-        height: '68px', 
+        height: '76px', 
         display: 'flex', 
         alignItems: 'center' 
       }}

@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabaseClient'
 
 export const FALLBACK_LOGOS = {
   main: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521668999_identity_main.png",
-  dark: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784584032191_identity_dark.png",
+  dark: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784588773387_identity_dark.png",
   light: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521681484_identity_light.png",
   favicon: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784587416452_identity_favicon.png"
 };
@@ -27,10 +27,10 @@ export const defaultWebsiteSettings = {
   logo_dark_url: FALLBACK_LOGOS.dark,
   logo_light_url: FALLBACK_LOGOS.light,
   favicon_url: FALLBACK_LOGOS.favicon,
-  logo_header_height: 42,
+  logo_header_height: 58,
   logo_footer_height: 46,
   logo_menu_height: 42,
-  logo_mobile_height: 32,
+  logo_mobile_height: 42,
   updated_at: null
 };
 

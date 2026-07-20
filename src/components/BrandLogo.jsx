@@ -1,7 +1,7 @@
 import React from 'react';
 
 const FALLBACK_LOGOS = {
-  dark: 'https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784584032191_identity_dark.png',
+  dark: 'https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784588773387_identity_dark.png',
   light: 'https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521681484_identity_light.png',
   main: 'https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521668999_identity_main.png'
 };
@@ -22,7 +22,7 @@ const withVersion = (url, updatedAt) => {
 const getLogoHeight = (brandSettings, placement) => {
   if (placement === 'footer') return brandSettings?.logo_footer_height || 46;
   if (placement === 'menu') return brandSettings?.logo_menu_height || 42;
-  return brandSettings?.logo_header_height || 42;
+  return brandSettings?.logo_header_height || 58;
 };
 
 function BrandLogo({ brandSettings, variant = 'dark', placement = 'header' }) {
@@ -37,7 +37,7 @@ function BrandLogo({ brandSettings, variant = 'dark', placement = 'header' }) {
 
   const logoSrc = withVersion(rawLogoSrc, brandSettings?.updated_at);
   const height = getLogoHeight(brandSettings, placement);
-  const mobileHeight = brandSettings?.logo_mobile_height || 32;
+  const mobileHeight = brandSettings?.logo_mobile_height || 42;
 
   if (!logoSrc) {
     return <span className="brand-logo-fallback">Noveli Editorial</span>;
