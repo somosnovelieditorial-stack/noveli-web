@@ -117,20 +117,9 @@ export default function SideNavigation({ isOpen, onClose, links = {}, brandSetti
 
         {/* Logo */}
         <div className="logo-wrapper-sidenav" style={{ marginBottom: '40px' }}>
-          <Link to="/" className="logo-link" style={{ textDecoration: 'none' }}>
-            {sideNavLogoSrc ? (
-              <img
-                src={sideNavLogoSrc}
-                alt={brandSettings?.brand_name || 'Noveli Editorial'}
-                className="brand-logo-image"
-              />
-            ) : (
-              <div className="logo-text">
-                <span>{brandSettings?.brand_name || 'NOVELI'}</span>
-                <span>{brandSettings?.brand_subtitle || 'EDITORIAL'}</span>
-              </div>
-            )}
-          </Link>
+          <a href="/" className="logo-link" style={{ textDecoration: 'none' }}>
+            <BrandLogo variant="light" brandSettings={brandSettings} />
+          </a>
         </div>
 
         {/* Navigation Links */}

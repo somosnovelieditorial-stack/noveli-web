@@ -838,6 +838,13 @@ export async function refreshWebsiteSettings() {
   return null;
 }
 
+const FALLBACK_LOGOS = {
+  main: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521668999_identity_main.png",
+  dark: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521689999_identity_dark.png",
+  light: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521681484_identity_light.png",
+  favicon: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521718347_identity_favicon.png"
+};
+
 export async function fetchBrandSettings() {
   let data = null;
 
@@ -896,11 +903,19 @@ export async function fetchBrandSettings() {
     } catch (e) {}
   }
 
-  if (data) {
-    try {
-      localStorage.setItem('noveli_brand_settings_cache', JSON.stringify(data));
-    } catch (e) {}
-  }
+  const result = {
+    brand_name: data?.brand_name || "NOVELI",
+    brand_subtitle: data?.brand_subtitle || " — EDITORIAL",
+    logo_url: data?.logo_url || FALLBACK_LOGOS.main,
+    logo_dark_url: data?.logo_dark_url || FALLBACK_LOGOS.dark,
+    logo_light_url: data?.logo_light_url || FALLBACK_LOGOS.light,
+    favicon_url: data?.favicon_url || FALLBACK_LOGOS.favicon,
+    ...data
+  };
 
-  return data || null;
+  try {
+    localStorage.setItem('noveli_brand_settings_cache', JSON.stringify(result));
+  } catch (e) {}
+
+  return result;
 }
