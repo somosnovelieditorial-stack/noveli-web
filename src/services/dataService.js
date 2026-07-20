@@ -1,29 +1,46 @@
 import { supabase } from '../lib/supabaseClient'
 
+export const FALLBACK_LOGOS = {
+  main: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521668999_identity_main.png",
+  dark: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784584032191_identity_dark.png",
+  light: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521681484_identity_light.png",
+  favicon: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784587416452_identity_favicon.png"
+};
+
+export const cleanUrl = (value) => {
+  if (!value) return null;
+  const trimmed = String(value).trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
+export const withVersion = (url, updatedAt) => {
+  const clean = cleanUrl(url);
+  if (!clean || !updatedAt) return clean;
+  const separator = clean.includes('?') ? '&' : '?';
+  return `${clean}${separator}v=${encodeURIComponent(updatedAt)}`;
+};
+
 export const defaultWebsiteSettings = {
   brand_name: 'NOVELI',
   brand_subtitle: 'EDITORIAL',
-  logo_url: null,
-  logo_dark_url: null,
-  logo_light_url: null,
-  favicon_url: null
+  logo_url: FALLBACK_LOGOS.main,
+  logo_dark_url: FALLBACK_LOGOS.dark,
+  logo_light_url: FALLBACK_LOGOS.light,
+  favicon_url: FALLBACK_LOGOS.favicon,
+  logo_header_height: 42,
+  logo_footer_height: 46,
+  logo_menu_height: 42,
+  logo_mobile_height: 32,
+  updated_at: null
 };
 
 export const getLogoSrc = (settings, variant = 'dark') => {
-  const cleanUrl = (url) => {
-    if (!url || typeof url !== 'string' || url.trim() === '' || url.trim() === 'null') return null;
-    return url.trim();
-  };
-
   const logoSrc =
     variant === 'light'
-      ? cleanUrl(settings?.logo_light_url) || cleanUrl(settings?.logo_url) || cleanUrl(settings?.logo_dark_url)
-      : cleanUrl(settings?.logo_dark_url) || cleanUrl(settings?.logo_url) || cleanUrl(settings?.logo_light_url);
+      ? cleanUrl(settings?.logo_light_url) || cleanUrl(settings?.logo_url) || cleanUrl(settings?.logo_dark_url) || FALLBACK_LOGOS.light
+      : cleanUrl(settings?.logo_dark_url) || cleanUrl(settings?.logo_url) || cleanUrl(settings?.logo_light_url) || FALLBACK_LOGOS.dark;
 
-  console.log('SETTINGS USADOS PARA LOGO:', settings);
-  console.log('LOGO FINAL:', logoSrc);
-
-  return logoSrc;
+  return withVersion(logoSrc, settings?.updated_at);
 };
 
 export const normalizeWebsiteSettings = (input) => {
@@ -49,10 +66,11 @@ export const fallbackData = {
     hero_subtitle: "En Noveli acompañamos a autores en el proceso editorial, desde la revisión del manuscrito hasta la preparación final para publicación digital o impresa.",
     brand_name: "NOVELI",
     brand_subtitle: " — EDITORIAL",
-    logo_url: null,
-    logo_dark_url: null,
-    logo_light_url: null,
-    favicon_url: null
+    logo_url: FALLBACK_LOGOS.main,
+    logo_dark_url: FALLBACK_LOGOS.dark,
+    logo_light_url: FALLBACK_LOGOS.light,
+    favicon_url: FALLBACK_LOGOS.favicon,
+    updated_at: null
   },
   heroSettings: {
     eyebrow: "Somos Noveli Editorial",
@@ -367,7 +385,9 @@ export async function fetchWebsiteData() {
       supabase
         .from('website_settings')
         .select('id,brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at')
-        .eq('id', '3a170b5c-4382-4271-830c-abd7e14dae79')
+        .eq('active', true)
+        .order('updated_at', { ascending: false, nullsFirst: false })
+        .limit(1)
         .maybeSingle(),
       TIMEOUT_LIMIT,
       'Settings'
@@ -815,7 +835,9 @@ export async function refreshWebsiteSettings() {
     const { data: row, error } = await supabase
       .from('website_settings')
       .select('id,brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at')
-      .eq('id', '3a170b5c-4382-4271-830c-abd7e14dae79')
+      .eq('active', true)
+      .order('updated_at', { ascending: false, nullsFirst: false })
+      .limit(1)
       .maybeSingle();
 
     if (error) throw error;
@@ -838,84 +860,41 @@ export async function refreshWebsiteSettings() {
   return null;
 }
 
-const FALLBACK_LOGOS = {
-  main: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521668999_identity_main.png",
-  dark: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521689999_identity_dark.png",
-  light: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521681484_identity_light.png",
-  favicon: "https://bdxlzhpmifxwmqjnnmxa.supabase.co/storage/v1/object/public/documents/11111111-1111-1111-1111-111111111111/website/identity/1784521718347_identity_favicon.png"
-};
-
 export async function fetchBrandSettings() {
   let data = null;
 
   if (supabase) {
     try {
-      let { data: byId } = await supabase
+      const { data: activeData, error } = await supabase
         .from('website_settings')
-        .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,active,updated_at,created_at')
-        .eq('id', '3a170b5c-4382-4271-830c-abd7e14dae79')
+        .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,logo_header_height,logo_footer_height,logo_menu_height,logo_mobile_height,active,updated_at,created_at')
+        .eq('active', true)
+        .order('updated_at', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
-      if (byId) data = byId;
-
-      if (!data || (!data.logo_url && !data.logo_dark_url && !data.logo_light_url)) {
-        const { data: activeData } = await supabase
-          .from('website_settings')
-          .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,active,updated_at,created_at')
-          .eq('active', true)
-          .order('updated_at', { ascending: false, nullsFirst: false })
-          .limit(1)
-          .maybeSingle();
-        if (activeData) data = activeData;
-      }
-
-      if (!data || (!data.logo_url && !data.logo_dark_url && !data.logo_light_url)) {
-        const { data: anyData } = await supabase
-          .from('website_settings')
-          .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,active,updated_at,created_at')
-          .limit(1)
-          .maybeSingle();
-        if (anyData) data = anyData;
-      }
+      if (error) throw error;
+      if (activeData) data = activeData;
     } catch (err) {
       console.error('Error cargando identidad visual desde Supabase:', err);
     }
   }
 
-  if (!data || (!data.logo_url && !data.logo_dark_url && !data.logo_light_url)) {
-    try {
-      const cmsCache = localStorage.getItem('somos_noveli_website_settings_cms');
-      if (cmsCache) {
-        const parsed = JSON.parse(cmsCache);
-        if (parsed && (parsed.logo_url || parsed.logo_dark_url || parsed.logo_light_url)) {
-          data = parsed;
-        }
-      }
-      if (!data) {
-        const brandCache = localStorage.getItem('noveli_brand_settings_cache');
-        if (brandCache) {
-          const parsed = JSON.parse(brandCache);
-          if (parsed && (parsed.logo_url || parsed.logo_dark_url || parsed.logo_light_url)) {
-            data = parsed;
-          }
-        }
-      }
-    } catch (e) {}
-  }
-
   const result = {
+    ...(data || {}),
     brand_name: data?.brand_name || "NOVELI",
     brand_subtitle: data?.brand_subtitle || " — EDITORIAL",
-    logo_url: data?.logo_url || FALLBACK_LOGOS.main,
-    logo_dark_url: data?.logo_dark_url || FALLBACK_LOGOS.dark,
-    logo_light_url: data?.logo_light_url || FALLBACK_LOGOS.light,
-    favicon_url: data?.favicon_url || FALLBACK_LOGOS.favicon,
-    ...data
+    logo_url: cleanUrl(data?.logo_url) || FALLBACK_LOGOS.main,
+    logo_dark_url: cleanUrl(data?.logo_dark_url) || FALLBACK_LOGOS.dark,
+    logo_light_url: cleanUrl(data?.logo_light_url) || FALLBACK_LOGOS.light,
+    favicon_url: cleanUrl(data?.favicon_url) || FALLBACK_LOGOS.favicon,
+    logo_header_height: data?.logo_header_height || defaultWebsiteSettings.logo_header_height,
+    logo_footer_height: data?.logo_footer_height || defaultWebsiteSettings.logo_footer_height,
+    logo_menu_height: data?.logo_menu_height || defaultWebsiteSettings.logo_menu_height,
+    logo_mobile_height: data?.logo_mobile_height || defaultWebsiteSettings.logo_mobile_height,
+    updated_at: data?.updated_at || null
   };
-
-  try {
-    localStorage.setItem('noveli_brand_settings_cache', JSON.stringify(result));
-  } catch (e) {}
 
   return result;
 }

@@ -42,17 +42,6 @@ export default function SideNavigation({ isOpen, onClose, links = {}, brandSetti
     };
   }, [isOpen]);
 
-  const cleanUrl = (value) => {
-    if (!value) return null;
-    const trimmed = String(value).trim();
-    return trimmed.length > 0 && trimmed !== 'null' ? trimmed : null;
-  };
-
-  const sideNavLogoSrc =
-    cleanUrl(brandSettings?.logo_light_url) ||
-    cleanUrl(brandSettings?.logo_url) ||
-    cleanUrl(brandSettings?.logo_dark_url);
-
   if (!isOpen) return null;
 
   return (
@@ -118,7 +107,7 @@ export default function SideNavigation({ isOpen, onClose, links = {}, brandSetti
         {/* Logo */}
         <div className="logo-wrapper-sidenav" style={{ marginBottom: '40px' }}>
           <a href="/" className="logo-link" style={{ textDecoration: 'none' }}>
-            <BrandLogo variant="light" brandSettings={brandSettings} />
+            <BrandLogo brandSettings={brandSettings} variant="light" placement="menu" />
           </a>
         </div>
 

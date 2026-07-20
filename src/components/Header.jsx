@@ -71,7 +71,7 @@ export default function Header({ brandSettings, onOpenMenu }) {
               justifyContent: 'center' 
             }}
           >
-            <BrandLogo variant="dark" brandSettings={brandSettings} />
+            <BrandLogo brandSettings={brandSettings} variant="dark" placement="header" />
           </a>
         </div>
 

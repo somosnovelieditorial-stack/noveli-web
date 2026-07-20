@@ -215,34 +215,18 @@ button, .btn {
   align-items: center;
 }
 
-.logo-text {
-  font-family: var(--font-serif-title);
-  font-size: 1.15rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: var(--wine-dark) !important;
-}
-
 .brand-logo-image {
   display: block;
+  height: var(--logo-height, 42px);
   width: auto;
-  max-width: 220px;
-  max-height: 44px;
+  max-width: 240px;
   object-fit: contain;
-}
-
-.header .brand-logo-image {
-  max-height: 42px;
-}
-
-.footer .brand-logo-image {
-  max-height: 46px;
 }
 
 @media (max-width: 640px) {
   .brand-logo-image {
-    max-width: 160px;
-    max-height: 34px;
+    height: var(--logo-mobile-height, 32px);
+    max-width: 170px;
   }
 }
 
@@ -2082,9 +2066,6 @@ html, body {
     height: 56px !important;
     padding: 0 16px !important;
   }
-  .logo-text {
-    font-size: 0.9rem !important;
-  }
   .logo-sub {
     display: none !important;
   }
@@ -2260,7 +2241,7 @@ html, body {
   }
 }
 
-.brand-logo-image, .site-logo-image {
+.site-logo-image {
   display: block;
   height: auto !important;
   max-height: 42px !important;
@@ -2270,7 +2251,7 @@ html, body {
 }
 
 @media (max-width: 640px) {
-  .brand-logo-image, .site-logo-image {
+  .site-logo-image {
     max-height: 32px !important;
     max-width: 150px !important;
   }

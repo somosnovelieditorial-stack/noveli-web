@@ -37,7 +37,7 @@ export default function Footer({ brandSettings, fs, services, footerGallery, loa
           <div className="footer-col" style={{ gridColumn: 'span 2' }}>
             <div className="footer-logo-wrapper" style={{ marginBottom: '12px' }}>
               <a href="/" className="logo-link" style={{ textDecoration: 'none', display: 'inline-block' }}>
-                <BrandLogo variant="light" brandSettings={brandSettings} />
+                <BrandLogo brandSettings={brandSettings} variant="light" placement="footer" />
               </a>
             </div>
             <p style={{ maxWidth: '280px', lineHeight: '1.6', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)' }}>

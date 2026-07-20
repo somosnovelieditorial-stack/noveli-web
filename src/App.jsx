@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { HashRouter as Router, Routes, Route, NavLink, Link, useLocation } from 'react-router-dom'
-import { fetchWebsiteData, getCachedWebsiteData, fallbackData, getBookCover, defaultWebsiteSettings, getLogoSrc, normalizeWebsiteSettings, fetchBrandSettings } from './services/dataService'
+import { fetchWebsiteData, getCachedWebsiteData, fallbackData, getBookCover, defaultWebsiteSettings, getLogoSrc, normalizeWebsiteSettings, fetchBrandSettings, cleanUrl, withVersion, FALLBACK_LOGOS } from './services/dataService'
 import HomePage from './pages/HomePage'
 
 // Lazy loaded page components
@@ -25,33 +25,28 @@ function AppContent() {
   });
   const [loaded, setLoaded] = useState(() => !!getCachedWebsiteData());
   const [sideNavOpen, setSideNavOpen] = useState(false);
-  const [brandSettings, setBrandSettings] = useState(() => {
-    try {
-      const cached = localStorage.getItem('noveli_brand_settings_cache');
-      return cached ? JSON.parse(cached) : null;
-    } catch (e) {
-      return null;
-    }
-  });
+  const [brandSettings, setBrandSettings] = useState(null);
   const location = useLocation();
 
   const { services, books, sections, links, footerSettings, footerGallery } = data || {};
 
   useEffect(() => {
-    fetchBrandSettings().then((res) => {
-      if (res) setBrandSettings(res);
-    });
+    fetchBrandSettings().then(setBrandSettings);
   }, []);
 
   useEffect(() => {
-    if (brandSettings && brandSettings.favicon_url) {
+    const faviconUrl = withVersion(
+      cleanUrl(brandSettings?.favicon_url) || FALLBACK_LOGOS.favicon,
+      brandSettings?.updated_at
+    );
+    if (faviconUrl) {
       let link = document.querySelector("link[rel~='icon']");
       if (!link) {
         link = document.createElement('link');
         link.rel = 'icon';
         document.getElementsByTagName('head')[0].appendChild(link);
       }
-      link.href = brandSettings.favicon_url;
+      link.href = faviconUrl;
     }
   }, [brandSettings]);
 
