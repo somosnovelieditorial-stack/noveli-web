@@ -15,6 +15,7 @@ import EditorialSkeleton from './components/EditorialSkeleton'
 import SideNavigation from './components/SideNavigation'
 import BrandLogo from './components/BrandLogo'
 import ErrorBoundary from './components/ErrorBoundary'
+import { supabase } from './lib/supabaseClient'
 import './App.css'
 
 // Inline SVG Icon Components
@@ -41,14 +42,42 @@ function AppContent() {
   });
   const [loaded, setLoaded] = useState(() => !!getCachedWebsiteData());
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [headerSettings, setHeaderSettings] = useState(null);
   const location = useLocation();
 
   const { services, books, sections, links, footerSettings, footerGallery, settings } = data || {};
-  const websiteSettings = settings || defaultWebsiteSettings;
+  const websiteSettings = headerSettings || settings || defaultWebsiteSettings;
 
   // Shared getLogoSrc utility is imported from dataService.js
   const logoSrc = getLogoSrc(websiteSettings, 'dark');
   const logoLightSrc = getLogoSrc(websiteSettings, 'light');
+
+  useEffect(() => {
+    async function getHeaderSettings() {
+      if (!supabase) return;
+      try {
+        const { data: resData, error } = await supabase
+          .from('website_settings')
+          .select('brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at')
+          .eq('active', true)
+          .order('updated_at', { ascending: false, nullsFirst: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (import.meta.env.DEV) {
+          console.log('HEADER SETTINGS:', resData);
+          console.log('HEADER LOGO URL:', resData?.logo_dark_url || resData?.logo_url || resData?.logo_light_url);
+        }
+
+        if (resData) {
+          setHeaderSettings(resData);
+        }
+      } catch (err) {
+        console.error('Error fetching header settings directly:', err);
+      }
+    }
+    getHeaderSettings();
+  }, []);
 
   useEffect(() => {
     if (websiteSettings && websiteSettings.favicon_url) {

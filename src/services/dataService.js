@@ -294,7 +294,7 @@ function withTimeout(promise, timeoutMs = 2500, label = 'Query') {
 
 // Return cached data immediately if any is available
 export function getCachedWebsiteData() {
-  const cachedSettings = getCachedItem('noveli_settings_cache');
+  const cachedSettings = null; // getCachedItem('noveli_settings_cache');
   const cachedHero = getCachedItem('noveli_hero_cache');
   const cachedServices = getCachedItem('noveli_services_cache');
   const cachedBooks = getCachedItem('noveli_books_cache');
@@ -433,42 +433,26 @@ export async function fetchWebsiteData() {
   const settingsData = getResult(0);
   if (settingsData) {
     const row = settingsData;
-    const cachedSettings = getCachedItem('noveli_settings_cache');
+    const cachedSettings = null; // Disable cache read/write for settings in this test
 
-    let shouldUpdate = true;
-    if (cachedSettings && cachedSettings.updated_at && row.updated_at) {
-      const cachedTime = new Date(cachedSettings.updated_at).getTime();
-      const freshTime = new Date(row.updated_at).getTime();
-      if (freshTime <= cachedTime) {
-        shouldUpdate = false;
-      }
-    }
+    data.settings.hero_title = row.hero_title || row.title || row.titulo || fallbackData.settings.hero_title;
+    data.settings.hero_subtitle = row.hero_subtitle || row.subtitle || row.subtitulo || fallbackData.settings.hero_subtitle;
+    data.settings.brand_name = row.brand_name || defaultWebsiteSettings.brand_name;
+    data.settings.brand_subtitle = row.brand_subtitle || defaultWebsiteSettings.brand_subtitle;
+    data.settings.logo_url = row.logo_url || defaultWebsiteSettings.logo_url;
+    data.settings.logo_dark_url = row.logo_dark_url || defaultWebsiteSettings.logo_dark_url;
+    data.settings.logo_light_url = row.logo_light_url || defaultWebsiteSettings.logo_light_url;
+    data.settings.favicon_url = row.favicon_url || defaultWebsiteSettings.favicon_url;
+    data.settings.updated_at = row.updated_at || null;
 
-    if (shouldUpdate) {
-      data.settings.hero_title = row.hero_title || row.title || row.titulo || fallbackData.settings.hero_title;
-      data.settings.hero_subtitle = row.hero_subtitle || row.subtitle || row.subtitulo || fallbackData.settings.hero_subtitle;
-      data.settings.brand_name = row.brand_name || defaultWebsiteSettings.brand_name;
-      data.settings.brand_subtitle = row.brand_subtitle || defaultWebsiteSettings.brand_subtitle;
-      data.settings.logo_url = row.logo_url || defaultWebsiteSettings.logo_url;
-      data.settings.logo_dark_url = row.logo_dark_url || defaultWebsiteSettings.logo_dark_url;
-      data.settings.logo_light_url = row.logo_light_url || defaultWebsiteSettings.logo_light_url;
-      data.settings.favicon_url = row.favicon_url || defaultWebsiteSettings.favicon_url;
-      data.settings.updated_at = row.updated_at || null;
-
-      const email = row.contact_email || row.email || row.correo || row.correo_contacto;
-      if (email) data.links.email = email.replace('mailto:', '');
-      const instagram = row.instagram || row.instagram_url;
-      if (instagram) data.links.instagram = instagram;
-      const contact = row.contact_url || row.contact_link || row.contact || row.contacto || row.phone || row.telefono || row.whatsapp;
-      if (contact) data.links.contact = contact;
-
-      setCachedItem('noveli_settings_cache', data.settings);
-    } else {
-      data.settings = cachedSettings;
-    }
+    const email = row.contact_email || row.email || row.correo || row.correo_contacto;
+    if (email) data.links.email = email.replace('mailto:', '');
+    const instagram = row.instagram || row.instagram_url;
+    if (instagram) data.links.instagram = instagram;
+    const contact = row.contact_url || row.contact_link || row.contact || row.contacto || row.phone || row.telefono || row.whatsapp;
+    if (contact) data.links.contact = contact;
   } else {
-    const cachedSettings = getCachedItem('noveli_settings_cache');
-    if (cachedSettings) data.settings = cachedSettings;
+    const cachedSettings = null; // Disable cache
   }
 
   // 2. Map services
