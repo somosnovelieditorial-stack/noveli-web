@@ -52,7 +52,7 @@ export default function ServiceCard({ service, index, variant = 'large', onReque
       <article 
         className="service-card-compact"
         style={{ 
-          width: '280px', 
+          width: '310px', 
           height: '320px', 
           display: 'flex', 
           flexDirection: 'column', 
@@ -63,7 +63,8 @@ export default function ServiceCard({ service, index, variant = 'large', onReque
           overflow: 'hidden',
           position: 'relative',
           transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-          flexShrink: 0
+          flexShrink: 0,
+          flex: '0 0 310px'
         }}
       >
         {/* Recommended Badge */}

@@ -404,9 +404,9 @@ export default function HomePage({ data, loaded, handleReload }) {
       })()}
 
       {/* 3. Servicios Section */}
-      <section id="servicios" className="section services-section">
+      <section id="servicios" className="section services-section" style={{ padding: '40px 0 28px 0' }}>
         <div className="container">
-          <div className="section-title-wrapper">
+          <div className="section-title-wrapper" style={{ marginBottom: '24px' }}>
             <span className="section-subtitle">— LO QUE HACEMOS —</span>
             <h2 className="section-title">
               Servicios editoriales
@@ -415,13 +415,15 @@ export default function HomePage({ data, loaded, handleReload }) {
               </svg>
             </h2>
           </div>
-          
+        </div>
+
+        <div className="services-wide-container">
           <div className="catalog-carousel-container" style={{ position: 'relative' }}>
             <button 
               className="carousel-arrow arrow-left" 
               onClick={scrollServicesLeft} 
               aria-label="Desplazar a la izquierda"
-              style={{ top: '50%', transform: 'translateY(-50%)' }}
+              style={{ position: 'absolute', left: '-40px', top: '50%', transform: 'translateY(-50%)' }}
             >
               ‹
             </button>
@@ -449,13 +451,13 @@ export default function HomePage({ data, loaded, handleReload }) {
               className="carousel-arrow arrow-right" 
               onClick={scrollServicesRight} 
               aria-label="Desplazar a la derecha"
-              style={{ top: '50%', transform: 'translateY(-50%)' }}
+              style={{ position: 'absolute', right: '-40px', top: '50%', transform: 'translateY(-50%)' }}
             >
               ›
             </button>
           </div>
 
-          <div style={{ marginTop: '28px', textAlign: 'center' }}>
+          <div style={{ marginTop: '24px', textAlign: 'center' }}>
             <Link to="/servicios" className="services-more-link" id="btn-all-services">
               VER TODOS LOS SERVICIOS ➔
             </Link>

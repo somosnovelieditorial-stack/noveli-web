@@ -26,7 +26,7 @@ export default function NosotrosPage({ sections = {}, links = {} }) {
               position: 'relative'
             }}
           >
-            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(to right, rgba(23, 53, 47, 0) 60%, rgba(23, 53, 47, 0.1) 100%)' }}></div>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(to right, rgba(21, 36, 55, 0) 60%, rgba(21, 36, 55, 0.1) 100%)' }}></div>
           </div>
 
           <div style={{ textAlign: 'left', padding: '10px 0' }}>
