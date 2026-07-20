@@ -1,4 +1,4 @@
-import { getLogoSrc, normalizeWebsiteSettings } from '../services/dataService';
+import { normalizeWebsiteSettings } from '../services/dataService';
 
 export default function BrandLogo({ settings, variant = 'dark' }) {
   const normalizedSettings = normalizeWebsiteSettings(settings);
@@ -6,32 +6,26 @@ export default function BrandLogo({ settings, variant = 'dark' }) {
   const cleanUrl = (value) => {
     if (!value) return null;
     const trimmed = String(value).trim();
-    return trimmed.length > 0 ? trimmed : null;
+    return trimmed.length > 0 && trimmed !== 'null' ? trimmed : null;
   };
 
-  const logoUrl = cleanUrl(normalizedSettings?.logo_url);
-  const logoDarkUrl = cleanUrl(normalizedSettings?.logo_dark_url);
-  const logoLightUrl = cleanUrl(normalizedSettings?.logo_light_url);
+  const target = normalizedSettings || settings;
 
   const logoSrc =
     variant === 'light'
-      ? logoLightUrl || logoUrl || logoDarkUrl
-      : logoDarkUrl || logoUrl || logoLightUrl;
+      ? cleanUrl(target?.logo_light_url) || cleanUrl(target?.logo_url) || cleanUrl(target?.logo_dark_url)
+      : cleanUrl(target?.logo_dark_url) || cleanUrl(target?.logo_url) || cleanUrl(target?.logo_light_url);
 
-  if (import.meta.env.DEV) {
-    console.log('Website settings logo raw:', settings);
-    console.table(settings);
-    console.log('Website settings normalizado:', normalizedSettings);
-    console.log('Logo seleccionado final:', logoSrc);
-    console.log('Logo URL limpia:', logoSrc);
-  }
+  console.log('SETTINGS USADOS PARA LOGO:', settings);
+  console.log('LOGO FINAL:', logoSrc);
 
   if (logoSrc) {
     return (
       <img 
         src={logoSrc} 
-        alt={normalizedSettings?.brand_name || 'Noveli Editorial'} 
+        alt={target?.brand_name || 'Noveli Editorial'} 
         className="brand-logo-image" 
+        style={{ height: '32px', objectFit: 'contain', display: 'block' }}
         onError={(e) => {
           console.error('Error cargando logo:', logoSrc);
           e.currentTarget.style.display = 'none';
@@ -41,8 +35,8 @@ export default function BrandLogo({ settings, variant = 'dark' }) {
   }
 
   // Fallback text
-  const brandName = normalizedSettings?.brand_name || 'NOVELI';
-  const brandSubtitle = normalizedSettings?.brand_subtitle || ' — EDITORIAL';
+  const brandName = target?.brand_name || 'NOVELI';
+  const brandSubtitle = target?.brand_subtitle || ' — EDITORIAL';
   const isDark = variant === 'dark';
 
   return (

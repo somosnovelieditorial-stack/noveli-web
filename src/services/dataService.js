@@ -10,15 +10,20 @@ export const defaultWebsiteSettings = {
 };
 
 export const getLogoSrc = (settings, variant = 'dark') => {
-  if (!settings) return null;
-  const normalized = normalizeWebsiteSettings(settings);
-  if (!normalized) return null;
+  const cleanUrl = (url) => {
+    if (!url || typeof url !== 'string' || url.trim() === '' || url.trim() === 'null') return null;
+    return url.trim();
+  };
 
-  if (variant === 'light') {
-    return normalized.logo_light_url || normalized.logo_url || normalized.logo_dark_url || null;
-  }
+  const logoSrc =
+    variant === 'light'
+      ? cleanUrl(settings?.logo_light_url) || cleanUrl(settings?.logo_url) || cleanUrl(settings?.logo_dark_url)
+      : cleanUrl(settings?.logo_dark_url) || cleanUrl(settings?.logo_url) || cleanUrl(settings?.logo_light_url);
 
-  return normalized.logo_dark_url || normalized.logo_url || normalized.logo_light_url || null;
+  console.log('SETTINGS USADOS PARA LOGO:', settings);
+  console.log('LOGO FINAL:', logoSrc);
+
+  return logoSrc;
 };
 
 export const normalizeWebsiteSettings = (input) => {
@@ -44,10 +49,10 @@ export const fallbackData = {
     hero_subtitle: "En Noveli acompañamos a autores en el proceso editorial, desde la revisión del manuscrito hasta la preparación final para publicación digital o impresa.",
     brand_name: "NOVELI",
     brand_subtitle: " — EDITORIAL",
-    logo_url: "",
-    logo_dark_url: "",
-    logo_light_url: "",
-    favicon_url: ""
+    logo_url: null,
+    logo_dark_url: null,
+    logo_light_url: null,
+    favicon_url: null
   },
   heroSettings: {
     eyebrow: "Somos Noveli Editorial",
@@ -361,11 +366,8 @@ export async function fetchWebsiteData() {
     withTimeout(
       supabase
         .from('website_settings')
-        .select('brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at,created_at')
-        .eq('active', true)
-        .order('updated_at', { ascending: false, nullsFirst: false })
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .select('id,brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at')
+        .eq('id', '3a170b5c-4382-4271-830c-abd7e14dae79')
         .maybeSingle(),
       TIMEOUT_LIMIT,
       'Settings'
@@ -812,10 +814,8 @@ export async function refreshWebsiteSettings() {
   try {
     const { data: row, error } = await supabase
       .from('website_settings')
-      .select('brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at')
-      .eq('active', true)
-      .order('updated_at', { ascending: false, nullsFirst: false })
-      .limit(1)
+      .select('id,brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at')
+      .eq('id', '3a170b5c-4382-4271-830c-abd7e14dae79')
       .maybeSingle();
 
     if (error) throw error;
