@@ -49,9 +49,22 @@ function AppContent() {
   const logoSrc = getLogoSrc(websiteSettings, 'dark');
   const logoLightSrc = getLogoSrc(websiteSettings, 'light');
 
+  useEffect(() => {
+    if (websiteSettings && websiteSettings.favicon_url) {
+      let link = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = websiteSettings.favicon_url;
+    }
+  }, [websiteSettings]);
+
   if (import.meta.env.DEV) {
-    console.log('Website settings:', websiteSettings);
-    console.log('Logo URL detectada:', logoSrc);
+    console.log('Website settings cargados:', websiteSettings);
+    console.log('Logo header:', logoSrc);
+    console.log('Logo footer:', logoLightSrc);
   }
 
   const fs = footerSettings || {

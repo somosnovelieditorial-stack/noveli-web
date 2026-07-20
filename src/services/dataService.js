@@ -340,7 +340,13 @@ export async function fetchWebsiteData() {
   const queryPromises = [
     // 0: Settings
     withTimeout(
-      supabase.from('website_settings').select('*').eq('active', true).limit(1).maybeSingle(),
+      supabase
+        .from('website_settings')
+        .select('brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at')
+        .eq('active', true)
+        .order('updated_at', { ascending: false, nullsFirst: false })
+        .limit(1)
+        .maybeSingle(),
       TIMEOUT_LIMIT,
       'Settings'
     ),
@@ -427,23 +433,39 @@ export async function fetchWebsiteData() {
   const settingsData = getResult(0);
   if (settingsData) {
     const row = settingsData;
-    data.settings.hero_title = row.hero_title || row.title || row.titulo || fallbackData.settings.hero_title;
-    data.settings.hero_subtitle = row.hero_subtitle || row.subtitle || row.subtitulo || fallbackData.settings.hero_subtitle;
-    data.settings.brand_name = row.brand_name || defaultWebsiteSettings.brand_name;
-    data.settings.brand_subtitle = row.brand_subtitle || defaultWebsiteSettings.brand_subtitle;
-    data.settings.logo_url = row.logo_url || defaultWebsiteSettings.logo_url;
-    data.settings.logo_dark_url = row.logo_dark_url || defaultWebsiteSettings.logo_dark_url;
-    data.settings.logo_light_url = row.logo_light_url || defaultWebsiteSettings.logo_light_url;
-    data.settings.favicon_url = row.favicon_url || defaultWebsiteSettings.favicon_url;
+    const cachedSettings = getCachedItem('noveli_settings_cache');
 
-    const email = row.contact_email || row.email || row.correo || row.correo_contacto;
-    if (email) data.links.email = email.replace('mailto:', '');
-    const instagram = row.instagram || row.instagram_url;
-    if (instagram) data.links.instagram = instagram;
-    const contact = row.contact_url || row.contact_link || row.contact || row.contacto || row.phone || row.telefono || row.whatsapp;
-    if (contact) data.links.contact = contact;
+    let shouldUpdate = true;
+    if (cachedSettings && cachedSettings.updated_at && row.updated_at) {
+      const cachedTime = new Date(cachedSettings.updated_at).getTime();
+      const freshTime = new Date(row.updated_at).getTime();
+      if (freshTime <= cachedTime) {
+        shouldUpdate = false;
+      }
+    }
 
-    setCachedItem('noveli_settings_cache', data.settings);
+    if (shouldUpdate) {
+      data.settings.hero_title = row.hero_title || row.title || row.titulo || fallbackData.settings.hero_title;
+      data.settings.hero_subtitle = row.hero_subtitle || row.subtitle || row.subtitulo || fallbackData.settings.hero_subtitle;
+      data.settings.brand_name = row.brand_name || defaultWebsiteSettings.brand_name;
+      data.settings.brand_subtitle = row.brand_subtitle || defaultWebsiteSettings.brand_subtitle;
+      data.settings.logo_url = row.logo_url || defaultWebsiteSettings.logo_url;
+      data.settings.logo_dark_url = row.logo_dark_url || defaultWebsiteSettings.logo_dark_url;
+      data.settings.logo_light_url = row.logo_light_url || defaultWebsiteSettings.logo_light_url;
+      data.settings.favicon_url = row.favicon_url || defaultWebsiteSettings.favicon_url;
+      data.settings.updated_at = row.updated_at || null;
+
+      const email = row.contact_email || row.email || row.correo || row.correo_contacto;
+      if (email) data.links.email = email.replace('mailto:', '');
+      const instagram = row.instagram || row.instagram_url;
+      if (instagram) data.links.instagram = instagram;
+      const contact = row.contact_url || row.contact_link || row.contact || row.contacto || row.phone || row.telefono || row.whatsapp;
+      if (contact) data.links.contact = contact;
+
+      setCachedItem('noveli_settings_cache', data.settings);
+    } else {
+      data.settings = cachedSettings;
+    }
   } else {
     const cachedSettings = getCachedItem('noveli_settings_cache');
     if (cachedSettings) data.settings = cachedSettings;
@@ -779,3 +801,34 @@ export const serviceNeedsManuscriptInfo = (service) => {
 
   return service?.requires_manuscript_info === true;
 };
+
+export async function refreshWebsiteSettings() {
+  if (!supabase) return null;
+  try {
+    const { data: row, error } = await supabase
+      .from('website_settings')
+      .select('brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at')
+      .eq('active', true)
+      .order('updated_at', { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (row) {
+      const settings = {
+        brand_name: row.brand_name || defaultWebsiteSettings.brand_name,
+        brand_subtitle: row.brand_subtitle || defaultWebsiteSettings.brand_subtitle,
+        logo_url: row.logo_url || defaultWebsiteSettings.logo_url,
+        logo_dark_url: row.logo_dark_url || defaultWebsiteSettings.logo_dark_url,
+        logo_light_url: row.logo_light_url || defaultWebsiteSettings.logo_light_url,
+        favicon_url: row.favicon_url || defaultWebsiteSettings.favicon_url,
+        updated_at: row.updated_at || null
+      };
+      setCachedItem('noveli_settings_cache', settings);
+      return settings;
+    }
+  } catch (err) {
+    console.error("Error refreshing website settings:", err);
+  }
+  return null;
+}

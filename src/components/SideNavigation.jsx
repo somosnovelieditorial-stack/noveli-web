@@ -106,14 +106,11 @@ export default function SideNavigation({ isOpen, onClose, links = {}, settings =
 
         {/* Logo */}
         <div className="logo-wrapper-sidenav" style={{ marginBottom: '40px' }}>
-          {getLogoSrc(settings, 'dark') ? (
+          {getLogoSrc(settings, 'light') ? (
             <img 
-              src={getLogoSrc(settings, 'dark')} 
+              src={getLogoSrc(settings, 'light')} 
               alt={settings?.brand_name || 'Noveli Editorial'} 
               className="site-logo-image brand-logo-sidenav"
-              style={{
-                filter: 'brightness(0) invert(1)' /* Light color on dark background (Rule 9) */
-              }}
             />
           ) : (
             <div className="logo-text" style={{ color: '#FFFFFF', fontSize: '1.4rem', margin: 0 }}>
