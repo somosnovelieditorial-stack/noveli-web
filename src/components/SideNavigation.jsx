@@ -42,6 +42,17 @@ export default function SideNavigation({ isOpen, onClose, links = {}, brandSetti
     };
   }, [isOpen]);
 
+  const cleanUrl = (value) => {
+    if (!value) return null;
+    const trimmed = String(value).trim();
+    return trimmed.length > 0 && trimmed !== 'null' ? trimmed : null;
+  };
+
+  const sideNavLogoSrc =
+    cleanUrl(brandSettings?.logo_light_url) ||
+    cleanUrl(brandSettings?.logo_url) ||
+    cleanUrl(brandSettings?.logo_dark_url);
+
   if (!isOpen) return null;
 
   return (
@@ -106,7 +117,20 @@ export default function SideNavigation({ isOpen, onClose, links = {}, brandSetti
 
         {/* Logo */}
         <div className="logo-wrapper-sidenav" style={{ marginBottom: '40px' }}>
-          <BrandLogo settings={brandSettings} variant="light" />
+          <Link to="/" className="logo-link" style={{ textDecoration: 'none' }}>
+            {sideNavLogoSrc ? (
+              <img
+                src={sideNavLogoSrc}
+                alt={brandSettings?.brand_name || 'Noveli Editorial'}
+                className="brand-logo-image"
+              />
+            ) : (
+              <div className="logo-text">
+                <span>{brandSettings?.brand_name || 'NOVELI'}</span>
+                <span>{brandSettings?.brand_subtitle || 'EDITORIAL'}</span>
+              </div>
+            )}
+          </Link>
         </div>
 
         {/* Navigation Links */}

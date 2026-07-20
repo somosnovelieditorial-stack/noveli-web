@@ -35,7 +35,7 @@ const InstagramIcon = () => (
 )
 
 function Header({ brandSettings, onOpenMenu }) {
-  console.log('HEADER BRAND SETTINGS:', brandSettings);
+  console.log('BRAND SETTINGS HEADER:', brandSettings);
 
   const cleanUrl = (value) => {
     if (!value) return null;
@@ -90,7 +90,7 @@ function Header({ brandSettings, onOpenMenu }) {
             {headerLogoSrc ? (
               <img
                 src={headerLogoSrc}
-                alt="Noveli Editorial"
+                alt={brandSettings?.brand_name || 'Noveli Editorial'}
                 className="brand-logo-image"
               />
             ) : (
@@ -132,6 +132,17 @@ function Header({ brandSettings, onOpenMenu }) {
 }
 
 function Footer({ brandSettings, fs, services, footerGallery, loaded }) {
+  const cleanUrl = (value) => {
+    if (!value) return null;
+    const trimmed = String(value).trim();
+    return trimmed.length > 0 && trimmed !== 'null' ? trimmed : null;
+  };
+
+  const footerLogoSrc =
+    cleanUrl(brandSettings?.logo_light_url) ||
+    cleanUrl(brandSettings?.logo_url) ||
+    cleanUrl(brandSettings?.logo_dark_url);
+
   return (
     <footer className="footer">
       <div className="container">
@@ -139,7 +150,18 @@ function Footer({ brandSettings, fs, services, footerGallery, loaded }) {
           <div className="footer-col" style={{ gridColumn: 'span 2' }}>
             <div className="footer-logo-wrapper" style={{ marginBottom: '12px' }}>
               <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'inline-block' }}>
-                <BrandLogo settings={brandSettings} variant="light" />
+                {footerLogoSrc ? (
+                  <img
+                    src={footerLogoSrc}
+                    alt={brandSettings?.brand_name || 'Noveli Editorial'}
+                    className="brand-logo-image"
+                  />
+                ) : (
+                  <div className="logo-text">
+                    <span>{brandSettings?.brand_name || 'NOVELI'}</span>
+                    <span>{brandSettings?.brand_subtitle || 'EDITORIAL'}</span>
+                  </div>
+                )}
               </Link>
             </div>
             <p style={{ maxWidth: '280px', lineHeight: '1.6', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)' }}>

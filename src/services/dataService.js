@@ -839,16 +839,37 @@ export async function refreshWebsiteSettings() {
 }
 
 export async function fetchBrandSettings() {
-  const { data, error } = await supabase
-    .from('website_settings')
-    .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,active,updated_at,created_at')
-    .eq('id', '3a170b5c-4382-4271-830c-abd7e14dae79')
-    .maybeSingle();
+  if (!supabase) return null;
+  try {
+    let { data, error } = await supabase
+      .from('website_settings')
+      .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,active,updated_at,created_at')
+      .eq('id', '3a170b5c-4382-4271-830c-abd7e14dae79')
+      .maybeSingle();
 
-  if (error) {
-    console.error('Error cargando identidad visual:', error);
+    if (!data || error) {
+      const { data: activeData } = await supabase
+        .from('website_settings')
+        .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,active,updated_at,created_at')
+        .eq('active', true)
+        .order('updated_at', { ascending: false, nullsFirst: false })
+        .limit(1)
+        .maybeSingle();
+      if (activeData) data = activeData;
+    }
+
+    if (!data) {
+      const { data: anyData } = await supabase
+        .from('website_settings')
+        .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,active,updated_at,created_at')
+        .limit(1)
+        .maybeSingle();
+      if (anyData) data = anyData;
+    }
+
+    return data || null;
+  } catch (err) {
+    console.error('Error cargando identidad visual:', err);
     return null;
   }
-
-  return data;
 }
