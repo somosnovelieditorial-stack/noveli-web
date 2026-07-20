@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { getLogoSrc } from '../services/dataService';
+import BrandLogo from './BrandLogo';
 
 export default function SideNavigation({ isOpen, onClose, links = {}, settings = {} }) {
   const panelRef = useRef(null);
@@ -106,22 +106,7 @@ export default function SideNavigation({ isOpen, onClose, links = {}, settings =
 
         {/* Logo */}
         <div className="logo-wrapper-sidenav" style={{ marginBottom: '40px' }}>
-          {getLogoSrc(settings, 'light') ? (
-            <img 
-              src={getLogoSrc(settings, 'light')} 
-              alt={settings?.brand_name || 'Noveli Editorial'} 
-              className="site-logo-image brand-logo-sidenav"
-            />
-          ) : (
-            <div className="logo-text" style={{ color: '#FFFFFF', fontSize: '1.4rem', margin: 0 }}>
-              {settings?.brand_name || 'NOVELI'}
-              <span className="logo-sub" style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.62rem' }}>{settings?.brand_subtitle || ' — EDITORIAL'}</span>
-              <svg className="logo-leaf" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '5px', display: 'inline-block', verticalAlign: 'middle' }}>
-                <path d="M2 22C2 22 10 22 16 16C21 11 20 4 20 4C20 4 13 3 8 8C2 14 2 22 2 22Z" fill="var(--accent-gold)" />
-                <path d="M12 12L2 22" />
-              </svg>
-            </div>
-          )}
+          <BrandLogo settings={settings} variant="light" />
         </div>
 
         {/* Navigation Links */}

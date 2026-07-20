@@ -13,6 +13,7 @@ const ServiceDetailPage = lazy(() => import('./pages/ServiceDetailPage'))
 import BookCover from './components/BookCover'
 import EditorialSkeleton from './components/EditorialSkeleton'
 import SideNavigation from './components/SideNavigation'
+import BrandLogo from './components/BrandLogo'
 import ErrorBoundary from './components/ErrorBoundary'
 import './App.css'
 
@@ -175,22 +176,7 @@ function AppContent() {
           {/* Centro: Logo */}
           <div style={{ justifySelf: 'center' }}>
             <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {logoSrc ? (
-                <img 
-                  src={logoSrc} 
-                  alt={websiteSettings?.brand_name || 'Noveli Editorial'} 
-                  className="site-logo-image brand-logo-dark"
-                />
-              ) : (
-                <div className="logo-text" style={{ color: 'var(--wine-dark)', margin: 0 }}>
-                  {websiteSettings?.brand_name || 'NOVELI'}
-                  <span className="logo-sub" style={{ color: 'var(--text-muted)' }}>{websiteSettings?.brand_subtitle || ' — EDITORIAL'}</span>
-                  <svg className="logo-leaf" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '5px', display: 'inline-block', verticalAlign: 'middle' }}>
-                    <path d="M2 22C2 22 10 22 16 16C21 11 20 4 20 4C20 4 13 3 8 8C2 14 2 22 2 22Z" fill="var(--accent-gold)" />
-                    <path d="M12 12L2 22" />
-                  </svg>
-                </div>
-              )}
+              <BrandLogo settings={websiteSettings} variant="dark" />
             </Link>
           </div>
 
@@ -247,22 +233,7 @@ function AppContent() {
             <div className="footer-col" style={{ gridColumn: 'span 2' }}>
               <div className="footer-logo-wrapper" style={{ marginBottom: '12px' }}>
                 <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'inline-block' }}>
-                  {logoLightSrc ? (
-                    <img 
-                      src={logoLightSrc} 
-                      alt={websiteSettings?.brand_name || 'Noveli Editorial'} 
-                      className="site-logo-image brand-logo-light"
-                    />
-                  ) : (
-                    <div className="logo-text footer-logo" style={{ color: '#FFFFFF', margin: 0 }}>
-                      {websiteSettings?.brand_name || 'NOVELI'}
-                      <span className="logo-sub">{websiteSettings?.brand_subtitle || ' — EDITORIAL'}</span>
-                      <svg className="logo-leaf" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '5px', display: 'inline-block', verticalAlign: 'middle' }}>
-                        <path d="M2 22C2 22 10 22 16 16C21 11 20 4 20 4C20 4 13 3 8 8C2 14 2 22 2 22Z" fill="var(--accent-gold)" />
-                        <path d="M12 12L2 22" />
-                      </svg>
-                    </div>
-                  )}
+                  <BrandLogo settings={websiteSettings} variant="light" />
                 </Link>
               </div>
               <p style={{ maxWidth: '280px', lineHeight: '1.6', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)' }}>
