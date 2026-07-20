@@ -35,6 +35,7 @@ const InstagramIcon = () => (
 )
 
 function Header({ brandSettings, onOpenMenu }) {
+  console.log('HEADER BRAND SETTINGS:', brandSettings);
   const headerClass = `header header-cream-solid`;
   return (
     <header className={headerClass} style={{ position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)', backdropFilter: 'blur(8px)', backgroundColor: '#FFFFFF', borderBottom: '1px solid rgba(199, 148, 58, 0.15)', height: '68px', display: 'flex', alignItems: 'center' }}>
