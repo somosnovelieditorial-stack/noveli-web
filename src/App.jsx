@@ -36,6 +36,21 @@ const InstagramIcon = () => (
 
 function Header({ brandSettings, onOpenMenu }) {
   console.log('HEADER BRAND SETTINGS:', brandSettings);
+
+  const cleanUrl = (value) => {
+    if (!value) return null;
+    const trimmed = String(value).trim();
+    return trimmed.length > 0 && trimmed !== 'null' ? trimmed : null;
+  };
+
+  const headerLogoSrc =
+    cleanUrl(brandSettings?.logo_dark_url) ||
+    cleanUrl(brandSettings?.logo_url) ||
+    cleanUrl(brandSettings?.logo_light_url) ||
+    null;
+
+  console.log('HEADER LOGO SRC REAL:', headerLogoSrc);
+
   const headerClass = `header header-cream-solid`;
   return (
     <header className={headerClass} style={{ position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)', backdropFilter: 'blur(8px)', backgroundColor: '#FFFFFF', borderBottom: '1px solid rgba(199, 148, 58, 0.15)', height: '68px', display: 'flex', alignItems: 'center' }}>
@@ -72,7 +87,18 @@ function Header({ brandSettings, onOpenMenu }) {
         {/* Centro: Logo */}
         <div style={{ justifySelf: 'center' }}>
           <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <BrandLogo settings={brandSettings} variant="dark" />
+            {headerLogoSrc ? (
+              <img
+                src={headerLogoSrc}
+                alt="Noveli Editorial"
+                className="brand-logo-image"
+              />
+            ) : (
+              <div className="logo-text">
+                <span>{brandSettings?.brand_name || 'NOVELI'}</span>
+                <span>{brandSettings?.brand_subtitle || 'EDITORIAL'}</span>
+              </div>
+            )}
           </Link>
         </div>
 
