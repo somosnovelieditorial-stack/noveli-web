@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { HashRouter as Router, Routes, Route, NavLink, Link, useLocation } from 'react-router-dom'
-import { fetchWebsiteData, getCachedWebsiteData, fallbackData, getBookCover, defaultWebsiteSettings, getLogoSrc, normalizeWebsiteSettings } from './services/dataService'
+import { fetchWebsiteData, getCachedWebsiteData, fallbackData, getBookCover, defaultWebsiteSettings, getLogoSrc, normalizeWebsiteSettings, fetchBrandSettings } from './services/dataService'
 import HomePage from './pages/HomePage'
 
 // Lazy loaded page components
@@ -34,6 +34,226 @@ const InstagramIcon = () => (
   </svg>
 )
 
+function Header({ brandSettings, onOpenMenu }) {
+  const headerClass = `header header-cream-solid`;
+  return (
+    <header className={headerClass} style={{ position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)', backdropFilter: 'blur(8px)', backgroundColor: '#FFFFFF', borderBottom: '1px solid rgba(199, 148, 58, 0.15)', height: '68px', display: 'flex', alignItems: 'center' }}>
+      <div className="container" style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', width: '100%', padding: '0 20px' }}>
+        
+        {/* Izquierda: Botón MENÚ */}
+        <div style={{ justifySelf: 'start' }}>
+          <button 
+            onClick={onOpenMenu} 
+            aria-label="Abrir menú"
+            id="btn-menu-toggle-editorial"
+            className="btn-header-menu-toggle"
+            style={{ 
+              backgroundColor: 'transparent',
+              color: 'var(--wine-dark)',
+              border: '1px solid var(--wine-dark)',
+              borderRadius: 0,
+              fontFamily: 'var(--font-sans)',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              padding: '8px 16px',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            MENÚ ☰
+          </button>
+        </div>
+
+        {/* Centro: Logo */}
+        <div style={{ justifySelf: 'center' }}>
+          <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <BrandLogo settings={brandSettings} variant="dark" />
+          </Link>
+        </div>
+
+        {/* Derecha: Botón SOLICITAR PROPUESTA */}
+        <div style={{ justifySelf: 'end' }} className="header-cta-wrapper-dynamic">
+          <Link 
+            to="/contacto" 
+            className="btn btn-header-cta-dynamic" 
+            style={{
+              backgroundColor: 'var(--accent-gold)',
+              color: 'var(--wine-dark)',
+              border: '1px solid var(--accent-gold)',
+              borderRadius: 0,
+              fontFamily: 'var(--font-sans)',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              padding: '8px 16px',
+              textDecoration: 'none',
+              transition: 'all 0.3s ease',
+              display: 'inline-block'
+            }}
+          >
+            SOLICITAR PROPUESTA
+          </Link>
+        </div>
+        
+      </div>
+    </header>
+  );
+}
+
+function Footer({ brandSettings, fs, services, footerGallery, loaded }) {
+  return (
+    <footer className="footer">
+      <div className="container">
+        <div className="footer-grid">
+          <div className="footer-col" style={{ gridColumn: 'span 2' }}>
+            <div className="footer-logo-wrapper" style={{ marginBottom: '12px' }}>
+              <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'inline-block' }}>
+                <BrandLogo settings={brandSettings} variant="light" />
+              </Link>
+            </div>
+            <p style={{ maxWidth: '280px', lineHeight: '1.6', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)' }}>
+              {fs.contact_description}
+            </p>
+            <div className="footer-socials-inline" style={{ marginTop: '16px', display: 'flex', gap: '12px' }}>
+              {fs.instagram_url && (
+                <a href={fs.instagram_url} target="_blank" rel="noopener noreferrer" className="social-link-icon">
+                  <InstagramIcon />
+                </a>
+              )}
+              {fs.contact_email && (
+                <a href={`mailto:${fs.contact_email}`} className="social-link-icon">
+                  <EnvelopeIcon />
+                </a>
+              )}
+            </div>
+          </div>
+          
+          <div className="footer-col">
+            <h4>NAVEGACIÓN</h4>
+            <ul className="footer-links">
+              <li><Link to="/">Inicio</Link></li>
+              <li><Link to="/servicios">Servicios</Link></li>
+              <li><Link to="/libros">Libros</Link></li>
+              <li><Link to="/nosotros">Nosotros</Link></li>
+              <li><Link to="/contacto">Contacto</Link></li>
+            </ul>
+          </div>
+
+          <div className="footer-col">
+            <h4>SERVICIOS</h4>
+            <ul className="footer-links">
+              {services && services.slice(0, 5).map(s => (
+                <li key={s.id}><Link to="/servicios">{s.title}</Link></li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="footer-col">
+            <h4>{fs.contact_title.toUpperCase()}</h4>
+            <ul className="footer-links">
+              {fs.contact_email && (
+                <li><a href={`mailto:${fs.contact_email}`} style={{ textTransform: 'lowercase' }}>{fs.contact_email}</a></li>
+              )}
+              {fs.contact_location && (
+                <li><span>{fs.contact_location}</span></li>
+              )}
+              <li><span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>Atendemos autores de todo el mundo.</span></li>
+            </ul>
+          </div>
+
+          {fs.instagram_enabled !== false && (
+            <div className="footer-col" style={{ minWidth: '180px' }}>
+              <h4>
+                {fs.instagram_url ? (
+                  <a href={fs.instagram_url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+                    {fs.instagram_title.toUpperCase()}
+                  </a>
+                ) : (
+                  fs.instagram_title.toUpperCase()
+                )}
+              </h4>
+              
+              <div className="footer-instagram-grid">
+                {(() => {
+                  if (!loaded) {
+                    return <EditorialSkeleton type="gallery" count={6} />;
+                  }
+                  const activeGallery = (footerGallery || []).filter(item => item.active !== false);
+                  if (activeGallery.length > 0) {
+                    return activeGallery.slice(0, 6).map((item, idx) => {
+                      const content = (
+                        <div className="instagram-grid-item-inner" style={{ width: '56px', height: '84px', overflow: 'hidden', borderRadius: '2px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                          <img 
+                            src={item.image_url} 
+                            alt={item.title || ""} 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                      );
+                      return (
+                        <div key={item.id || idx} className="instagram-grid-item" title={item.title}>
+                          {item.link_url ? (
+                            <a href={item.link_url} target="_blank" rel="noopener noreferrer">
+                              {content}
+                            </a>
+                          ) : (
+                            content
+                          )}
+                        </div>
+                      );
+                    });
+                  } else {
+                    return (
+                      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', gridColumn: 'span 3', padding: '10px 0' }}>
+                        {fs.instagram_url ? (
+                          <a 
+                            href={fs.instagram_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="btn-ver-instagram"
+                            style={{
+                              display: 'inline-block',
+                              padding: '6px 12px',
+                              backgroundColor: 'rgba(255,255,255,0.1)',
+                              borderRadius: '4px',
+                              color: '#FFFFFF',
+                              textDecoration: 'none',
+                              fontWeight: 'bold',
+                              fontSize: '0.7rem',
+                              letterSpacing: '0.05em',
+                              transition: 'background 0.2s'
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'}
+                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                          >
+                            VER INSTAGRAM
+                          </a>
+                        ) : (
+                          <span>Pronto compartiremos novedades editoriales.</span>
+                        )}
+                      </div>
+                    );
+                  }
+                })()}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="footer-bottom">
+          <p>&copy; 2026 Noveli Editorial. Todos los derechos reservados.</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 function AppContent() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(() => {
@@ -42,59 +262,31 @@ function AppContent() {
   });
   const [loaded, setLoaded] = useState(() => !!getCachedWebsiteData());
   const [sideNavOpen, setSideNavOpen] = useState(false);
-  const [headerSettings, setHeaderSettings] = useState(null);
+  const [brandSettings, setBrandSettings] = useState(null);
   const location = useLocation();
 
-  const { services, books, sections, links, footerSettings, footerGallery, settings } = data || {};
-  const websiteSettings = normalizeWebsiteSettings(headerSettings || settings) || defaultWebsiteSettings;
-
-  // Shared getLogoSrc utility is imported from dataService.js
-  const logoSrc = getLogoSrc(websiteSettings, 'dark');
-  const logoLightSrc = getLogoSrc(websiteSettings, 'light');
+  const { services, books, sections, links, footerSettings, footerGallery } = data || {};
 
   useEffect(() => {
-    async function getHeaderSettings() {
-      if (!supabase) return;
-      try {
-        const { data: resData, error } = await supabase
-          .from('website_settings')
-          .select('brand_name,brand_subtitle,logo_url,logo_light_url,logo_dark_url,favicon_url,active,updated_at,created_at')
-          .eq('active', true)
-          .order('updated_at', { ascending: false, nullsFirst: false })
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (import.meta.env.DEV) {
-          console.log('HEADER SETTINGS:', resData);
-          console.log('HEADER LOGO URL:', resData?.logo_dark_url || resData?.logo_url || resData?.logo_light_url);
-        }
-
-        setHeaderSettings(resData || null);
-      } catch (err) {
-        console.error('Error fetching header settings directly:', err);
-      }
-    }
-    getHeaderSettings();
+    fetchBrandSettings().then(setBrandSettings);
   }, []);
 
   useEffect(() => {
-    if (websiteSettings && websiteSettings.favicon_url) {
+    if (brandSettings && brandSettings.favicon_url) {
       let link = document.querySelector("link[rel~='icon']");
       if (!link) {
         link = document.createElement('link');
         link.rel = 'icon';
         document.getElementsByTagName('head')[0].appendChild(link);
       }
-      link.href = websiteSettings.favicon_url;
+      link.href = brandSettings.favicon_url;
     }
-  }, [websiteSettings]);
+  }, [brandSettings]);
 
-  if (import.meta.env.DEV) {
-    console.log('Website settings cargados:', websiteSettings);
-    console.log('Logo header:', logoSrc);
-    console.log('Logo footer:', logoLightSrc);
-  }
+  useEffect(() => {
+    const brand = brandSettings?.brand_name || defaultWebsiteSettings.brand_name;
+    document.title = `${brand} | Editorial Independiente`;
+  }, [brandSettings]);
 
   const fs = footerSettings || {
     contact_title: "Contáctanos",
@@ -125,23 +317,6 @@ function AppContent() {
     loadData();
   }, []);
 
-  // Update website metadata (Title and Favicon) dynamically when data resolves
-  useEffect(() => {
-    const brand = websiteSettings?.brand_name || defaultWebsiteSettings.brand_name;
-    document.title = `${brand} | Editorial Independiente`;
-    
-    const favUrl = websiteSettings?.favicon_url;
-    if (favUrl) {
-      let link = document.querySelector("link[rel~='icon']");
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.getElementsByTagName('head')[0].appendChild(link);
-      }
-      link.href = favUrl;
-    }
-  }, [websiteSettings]);
-
   // Scroll to top on route change
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -151,11 +326,6 @@ function AppContent() {
     loadData(true);
   };
 
-  // Render header dynamically based on route (or always cream background #F6EFE3 to ensure legibility)
-  const isHome = location.pathname === '/';
-  const headerClass = `header header-cream-solid`;
-
-  // No full-screen blocking loader unless it's a critical error (data is null/undefined)
   if (!data) {
     return (
       <div className="loading-screen">
@@ -168,72 +338,7 @@ function AppContent() {
   return (
     <div className="app-routing-wrapper">
       
-      {/* 1. Legible Solid Cream Header (#F6EFE3) */}
-      <header className={headerClass} style={{ position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)', backdropFilter: 'blur(8px)', backgroundColor: '#FFFFFF', borderBottom: '1px solid rgba(199, 148, 58, 0.15)', height: '68px', display: 'flex', alignItems: 'center' }}>
-        <div className="container" style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', width: '100%', padding: '0 20px' }}>
-          
-          {/* Izquierda: Botón MENÚ */}
-          <div style={{ justifySelf: 'start' }}>
-            <button 
-              onClick={() => setSideNavOpen(true)} 
-              aria-label="Abrir menú"
-              aria-expanded={sideNavOpen}
-              id="btn-menu-toggle-editorial"
-              className="btn-header-menu-toggle"
-              style={{ 
-                backgroundColor: 'transparent',
-                color: 'var(--wine-dark)',
-                border: '1px solid var(--wine-dark)',
-                borderRadius: 0,
-                fontFamily: 'var(--font-sans)',
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                padding: '8px 16px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              MENÚ ☰
-            </button>
-          </div>
-
-          {/* Centro: Logo */}
-          <div style={{ justifySelf: 'center' }}>
-            <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BrandLogo settings={websiteSettings} variant="dark" />
-            </Link>
-          </div>
-
-          {/* Derecha: Botón SOLICITAR PROPUESTA */}
-          <div style={{ justifySelf: 'end' }} className="header-cta-wrapper-dynamic">
-            <Link 
-              to="/contacto" 
-              className="btn btn-header-cta-dynamic" 
-              style={{
-                backgroundColor: 'var(--accent-gold)',
-                color: 'var(--wine-dark)',
-                border: '1px solid var(--accent-gold)',
-                borderRadius: 0,
-                fontFamily: 'var(--font-sans)',
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                padding: '8px 16px',
-                textDecoration: 'none',
-                transition: 'all 0.3s ease',
-                display: 'inline-block'
-              }}
-            >
-              SOLICITAR PROPUESTA
-            </Link>
-          </div>
-          
-        </div>
-      </header>
+      <Header brandSettings={brandSettings} onOpenMenu={() => setSideNavOpen(true)} />
 
       {/* Pages Content Container */}
       <main className="main-content-flow">
@@ -254,159 +359,13 @@ function AppContent() {
         </Suspense>
       </main>
 
-      {/* 7. Footer */}
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-grid">
-            <div className="footer-col" style={{ gridColumn: 'span 2' }}>
-              <div className="footer-logo-wrapper" style={{ marginBottom: '12px' }}>
-                <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'inline-block' }}>
-                  <BrandLogo settings={websiteSettings} variant="light" />
-                </Link>
-              </div>
-              <p style={{ maxWidth: '280px', lineHeight: '1.6', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)' }}>
-                {fs.contact_description}
-              </p>
-              <div className="footer-socials-inline" style={{ marginTop: '16px', display: 'flex', gap: '12px' }}>
-                {fs.instagram_url && (
-                  <a href={fs.instagram_url} target="_blank" rel="noopener noreferrer" className="social-link-icon">
-                    <InstagramIcon />
-                  </a>
-                )}
-                {fs.contact_email && (
-                  <a href={`mailto:${fs.contact_email}`} className="social-link-icon">
-                    <EnvelopeIcon />
-                  </a>
-                )}
-              </div>
-            </div>
-            
-            <div className="footer-col">
-              <h4>NAVEGACIÓN</h4>
-              <ul className="footer-links">
-                <li><Link to="/">Inicio</Link></li>
-                <li><Link to="/servicios">Servicios</Link></li>
-                <li><Link to="/libros">Libros</Link></li>
-                <li><Link to="/nosotros">Nosotros</Link></li>
-                <li><Link to="/contacto">Contacto</Link></li>
-              </ul>
-            </div>
+      <Footer brandSettings={brandSettings} fs={fs} services={services} footerGallery={footerGallery} loaded={loaded} />
 
-            <div className="footer-col">
-              <h4>SERVICIOS</h4>
-              <ul className="footer-links">
-                {services && services.slice(0, 5).map(s => (
-                  <li key={s.id}><Link to="/servicios">{s.title}</Link></li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="footer-col">
-              <h4>{fs.contact_title.toUpperCase()}</h4>
-              <ul className="footer-links">
-                {fs.contact_email && (
-                  <li><a href={`mailto:${fs.contact_email}`} style={{ textTransform: 'lowercase' }}>{fs.contact_email}</a></li>
-                )}
-                {fs.contact_location && (
-                  <li><span>{fs.contact_location}</span></li>
-                )}
-                <li><span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>Atendemos autores de todo el mundo.</span></li>
-              </ul>
-            </div>
-
-            {fs.instagram_enabled !== false && (
-              <div className="footer-col" style={{ minWidth: '180px' }}>
-                <h4>
-                  {fs.instagram_url ? (
-                    <a href={fs.instagram_url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
-                      {fs.instagram_title.toUpperCase()}
-                    </a>
-                  ) : (
-                    fs.instagram_title.toUpperCase()
-                  )}
-                </h4>
-                
-                <div className="footer-instagram-grid">
-                  {(() => {
-                    if (!loaded) {
-                      return <EditorialSkeleton type="gallery" count={6} />;
-                    }
-                    const activeGallery = (footerGallery || []).filter(item => item.active !== false);
-                    if (activeGallery.length > 0) {
-                      return activeGallery.slice(0, 6).map((item, idx) => {
-                        const content = (
-                          <div className="instagram-grid-item-inner" style={{ width: '56px', height: '84px', overflow: 'hidden', borderRadius: '2px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <img 
-                              src={item.image_url} 
-                              alt={item.title || ""} 
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                              loading="lazy"
-                              decoding="async"
-                            />
-                          </div>
-                        );
-                        return (
-                          <div key={item.id || idx} className="instagram-grid-item" title={item.title}>
-                            {item.link_url ? (
-                              <a href={item.link_url} target="_blank" rel="noopener noreferrer">
-                                {content}
-                              </a>
-                            ) : (
-                              content
-                            )}
-                          </div>
-                        );
-                      });
-                    } else {
-                      return (
-                        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', gridColumn: 'span 3', padding: '10px 0' }}>
-                          {fs.instagram_url ? (
-                            <a 
-                              href={fs.instagram_url} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="btn-ver-instagram"
-                              style={{
-                                display: 'inline-block',
-                                padding: '6px 12px',
-                                backgroundColor: 'rgba(255,255,255,0.1)',
-                                borderRadius: '4px',
-                                color: '#FFFFFF',
-                                textDecoration: 'none',
-                                fontWeight: 'bold',
-                                fontSize: '0.7rem',
-                                letterSpacing: '0.05em',
-                                transition: 'background 0.2s'
-                              }}
-                              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'}
-                              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                            >
-                              VER INSTAGRAM
-                            </a>
-                          ) : (
-                            <span>Pronto compartiremos novedades editoriales.</span>
-                          )}
-                        </div>
-                      );
-                    }
-                  })()}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="footer-bottom">
-            <p>&copy; 2026 Noveli Editorial. Todos los derechos reservados.</p>
-          </div>
-        </div>
-      </footer>
-
-      {/* Modern vertical side navigation drawer */}
       <SideNavigation 
         isOpen={sideNavOpen} 
         onClose={() => setSideNavOpen(false)} 
         links={links} 
-        settings={websiteSettings}
+        brandSettings={brandSettings}
       />
     </div>
   );

@@ -837,3 +837,22 @@ export async function refreshWebsiteSettings() {
   }
   return null;
 }
+
+export async function fetchBrandSettings() {
+  const { data, error } = await supabase
+    .from('website_settings')
+    .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,active,updated_at,created_at')
+    .eq('active', true)
+    .not('logo_url', 'is', null)
+    .order('updated_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error cargando identidad visual:', error);
+    return null;
+  }
+
+  return data;
+}

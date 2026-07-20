@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import BrandLogo from './BrandLogo';
 
-export default function SideNavigation({ isOpen, onClose, links = {}, settings = {} }) {
+export default function SideNavigation({ isOpen, onClose, links = {}, brandSettings = {} }) {
   const panelRef = useRef(null);
   const location = useLocation();
 
@@ -106,7 +106,7 @@ export default function SideNavigation({ isOpen, onClose, links = {}, settings =
 
         {/* Logo */}
         <div className="logo-wrapper-sidenav" style={{ marginBottom: '40px' }}>
-          <BrandLogo settings={settings} variant="light" />
+          <BrandLogo settings={brandSettings} variant="light" />
         </div>
 
         {/* Navigation Links */}

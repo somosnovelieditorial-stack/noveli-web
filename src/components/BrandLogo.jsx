@@ -1,7 +1,7 @@
 import { normalizeWebsiteSettings } from '../services/dataService';
 
 export default function BrandLogo({ settings, variant = 'dark' }) {
-  const normalizedSettings = normalizeWebsiteSettings(settings);
+  const brandSettings = settings;
 
   const cleanUrl = (value) => {
     if (!value) return null;
@@ -9,21 +9,23 @@ export default function BrandLogo({ settings, variant = 'dark' }) {
     return trimmed.length > 0 && trimmed !== 'null' ? trimmed : null;
   };
 
-  const target = normalizedSettings || settings;
+  const logoUrl = cleanUrl(brandSettings?.logo_url);
+  const logoDarkUrl = cleanUrl(brandSettings?.logo_dark_url);
+  const logoLightUrl = cleanUrl(brandSettings?.logo_light_url);
 
   const logoSrc =
     variant === 'light'
-      ? cleanUrl(target?.logo_light_url) || cleanUrl(target?.logo_url) || cleanUrl(target?.logo_dark_url)
-      : cleanUrl(target?.logo_dark_url) || cleanUrl(target?.logo_url) || cleanUrl(target?.logo_light_url);
+      ? logoLightUrl || logoUrl || logoDarkUrl
+      : logoDarkUrl || logoUrl || logoLightUrl;
 
-  console.log('SETTINGS USADOS PARA LOGO:', settings);
-  console.log('LOGO FINAL:', logoSrc);
+  console.log('BRAND SETTINGS PARA LOGO:', brandSettings);
+  console.log('LOGO SRC FINAL:', logoSrc);
 
   if (logoSrc) {
     return (
       <img 
         src={logoSrc} 
-        alt={target?.brand_name || 'Noveli Editorial'} 
+        alt={brandSettings?.brand_name || 'Noveli Editorial'} 
         className="brand-logo-image" 
         style={{ height: '32px', objectFit: 'contain', display: 'block' }}
         onError={(e) => {
@@ -35,8 +37,8 @@ export default function BrandLogo({ settings, variant = 'dark' }) {
   }
 
   // Fallback text
-  const brandName = target?.brand_name || 'NOVELI';
-  const brandSubtitle = target?.brand_subtitle || ' — EDITORIAL';
+  const brandName = brandSettings?.brand_name || 'NOVELI';
+  const brandSubtitle = brandSettings?.brand_subtitle || ' — EDITORIAL';
   const isDark = variant === 'dark';
 
   return (
