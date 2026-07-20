@@ -35,8 +35,6 @@ const InstagramIcon = () => (
 )
 
 function Header({ brandSettings, onOpenMenu }) {
-  console.log('BRAND SETTINGS HEADER:', brandSettings);
-
   const cleanUrl = (value) => {
     if (!value) return null;
     const trimmed = String(value).trim();
@@ -46,10 +44,10 @@ function Header({ brandSettings, onOpenMenu }) {
   const headerLogoSrc =
     cleanUrl(brandSettings?.logo_dark_url) ||
     cleanUrl(brandSettings?.logo_url) ||
-    cleanUrl(brandSettings?.logo_light_url) ||
-    null;
+    cleanUrl(brandSettings?.logo_light_url);
 
   console.log('HEADER LOGO SRC REAL:', headerLogoSrc);
+  console.log('BRAND SETTINGS HEADER:', brandSettings);
 
   const headerClass = `header header-cream-solid`;
   return (
@@ -86,7 +84,7 @@ function Header({ brandSettings, onOpenMenu }) {
 
         {/* Centro: Logo */}
         <div style={{ justifySelf: 'center' }}>
-          <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <a href="/" className="logo-link" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {headerLogoSrc ? (
               <img
                 src={headerLogoSrc}
@@ -99,7 +97,7 @@ function Header({ brandSettings, onOpenMenu }) {
                 <span>{brandSettings?.brand_subtitle || 'EDITORIAL'}</span>
               </div>
             )}
-          </Link>
+          </a>
         </div>
 
         {/* Derecha: Botón SOLICITAR PROPUESTA */}
@@ -149,7 +147,7 @@ function Footer({ brandSettings, fs, services, footerGallery, loaded }) {
         <div className="footer-grid">
           <div className="footer-col" style={{ gridColumn: 'span 2' }}>
             <div className="footer-logo-wrapper" style={{ marginBottom: '12px' }}>
-              <Link to="/" className="logo-link" style={{ textDecoration: 'none', display: 'inline-block' }}>
+              <a href="/" className="logo-link" style={{ textDecoration: 'none', display: 'inline-block' }}>
                 {footerLogoSrc ? (
                   <img
                     src={footerLogoSrc}
@@ -162,7 +160,7 @@ function Footer({ brandSettings, fs, services, footerGallery, loaded }) {
                     <span>{brandSettings?.brand_subtitle || 'EDITORIAL'}</span>
                   </div>
                 )}
-              </Link>
+              </a>
             </div>
             <p style={{ maxWidth: '280px', lineHeight: '1.6', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)' }}>
               {fs.contact_description}
@@ -311,13 +309,22 @@ function AppContent() {
   });
   const [loaded, setLoaded] = useState(() => !!getCachedWebsiteData());
   const [sideNavOpen, setSideNavOpen] = useState(false);
-  const [brandSettings, setBrandSettings] = useState(null);
+  const [brandSettings, setBrandSettings] = useState(() => {
+    try {
+      const cached = localStorage.getItem('noveli_brand_settings_cache');
+      return cached ? JSON.parse(cached) : null;
+    } catch (e) {
+      return null;
+    }
+  });
   const location = useLocation();
 
   const { services, books, sections, links, footerSettings, footerGallery } = data || {};
 
   useEffect(() => {
-    fetchBrandSettings().then(setBrandSettings);
+    fetchBrandSettings().then((res) => {
+      if (res) setBrandSettings(res);
+    });
   }, []);
 
   useEffect(() => {
