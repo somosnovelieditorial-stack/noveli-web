@@ -46,8 +46,8 @@ function Header({ brandSettings, onOpenMenu }) {
     cleanUrl(brandSettings?.logo_url) ||
     cleanUrl(brandSettings?.logo_light_url);
 
-  console.log('HEADER LOGO SRC REAL:', headerLogoSrc);
-  console.log('BRAND SETTINGS HEADER:', brandSettings);
+  console.log('HEADER BRAND SETTINGS:', brandSettings);
+  console.log('HEADER LOGO SRC:', headerLogoSrc);
 
   const headerClass = `header header-cream-solid`;
   return (

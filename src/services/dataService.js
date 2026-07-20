@@ -839,37 +839,68 @@ export async function refreshWebsiteSettings() {
 }
 
 export async function fetchBrandSettings() {
-  if (!supabase) return null;
-  try {
-    let { data, error } = await supabase
-      .from('website_settings')
-      .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,active,updated_at,created_at')
-      .eq('id', '3a170b5c-4382-4271-830c-abd7e14dae79')
-      .maybeSingle();
+  let data = null;
 
-    if (!data || error) {
-      const { data: activeData } = await supabase
+  if (supabase) {
+    try {
+      let { data: byId } = await supabase
         .from('website_settings')
         .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,active,updated_at,created_at')
-        .eq('active', true)
-        .order('updated_at', { ascending: false, nullsFirst: false })
-        .limit(1)
+        .eq('id', '3a170b5c-4382-4271-830c-abd7e14dae79')
         .maybeSingle();
-      if (activeData) data = activeData;
-    }
 
-    if (!data) {
-      const { data: anyData } = await supabase
-        .from('website_settings')
-        .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,active,updated_at,created_at')
-        .limit(1)
-        .maybeSingle();
-      if (anyData) data = anyData;
-    }
+      if (byId) data = byId;
 
-    return data || null;
-  } catch (err) {
-    console.error('Error cargando identidad visual:', err);
-    return null;
+      if (!data || (!data.logo_url && !data.logo_dark_url && !data.logo_light_url)) {
+        const { data: activeData } = await supabase
+          .from('website_settings')
+          .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,active,updated_at,created_at')
+          .eq('active', true)
+          .order('updated_at', { ascending: false, nullsFirst: false })
+          .limit(1)
+          .maybeSingle();
+        if (activeData) data = activeData;
+      }
+
+      if (!data || (!data.logo_url && !data.logo_dark_url && !data.logo_light_url)) {
+        const { data: anyData } = await supabase
+          .from('website_settings')
+          .select('id,brand_name,brand_subtitle,logo_url,logo_dark_url,logo_light_url,favicon_url,active,updated_at,created_at')
+          .limit(1)
+          .maybeSingle();
+        if (anyData) data = anyData;
+      }
+    } catch (err) {
+      console.error('Error cargando identidad visual desde Supabase:', err);
+    }
   }
+
+  if (!data || (!data.logo_url && !data.logo_dark_url && !data.logo_light_url)) {
+    try {
+      const cmsCache = localStorage.getItem('somos_noveli_website_settings_cms');
+      if (cmsCache) {
+        const parsed = JSON.parse(cmsCache);
+        if (parsed && (parsed.logo_url || parsed.logo_dark_url || parsed.logo_light_url)) {
+          data = parsed;
+        }
+      }
+      if (!data) {
+        const brandCache = localStorage.getItem('noveli_brand_settings_cache');
+        if (brandCache) {
+          const parsed = JSON.parse(brandCache);
+          if (parsed && (parsed.logo_url || parsed.logo_dark_url || parsed.logo_light_url)) {
+            data = parsed;
+          }
+        }
+      }
+    } catch (e) {}
+  }
+
+  if (data) {
+    try {
+      localStorage.setItem('noveli_brand_settings_cache', JSON.stringify(data));
+    } catch (e) {}
+  }
+
+  return data || null;
 }
