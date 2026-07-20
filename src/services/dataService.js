@@ -11,12 +11,31 @@ export const defaultWebsiteSettings = {
 
 export const getLogoSrc = (settings, variant = 'dark') => {
   if (!settings) return null;
+  const normalized = normalizeWebsiteSettings(settings);
+  if (!normalized) return null;
 
   if (variant === 'light') {
-    return settings.logo_light_url || settings.logo_url || settings.logo_dark_url || null;
+    return normalized.logo_light_url || normalized.logo_url || normalized.logo_dark_url || null;
   }
 
-  return settings.logo_dark_url || settings.logo_url || settings.logo_light_url || null;
+  return normalized.logo_dark_url || normalized.logo_url || normalized.logo_light_url || null;
+};
+
+export const normalizeWebsiteSettings = (input) => {
+  if (!input) return null;
+
+  // Si viene directo desde Supabase
+  if (input.logo_url || input.logo_dark_url || input.logo_light_url) {
+    return input;
+  }
+
+  // Si viene anidado por dataService
+  if (input.settings) return normalizeWebsiteSettings(input.settings);
+  if (input.websiteSettings) return normalizeWebsiteSettings(input.websiteSettings);
+  if (input.data) return normalizeWebsiteSettings(input.data);
+  if (input.result) return normalizeWebsiteSettings(input.result);
+
+  return input;
 };
 
 export const fallbackData = {

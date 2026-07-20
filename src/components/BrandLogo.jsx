@@ -1,26 +1,33 @@
-import { getLogoSrc } from '../services/dataService';
+import { getLogoSrc, normalizeWebsiteSettings } from '../services/dataService';
 
 export default function BrandLogo({ settings, variant = 'dark' }) {
-  const logoSrc = getLogoSrc(settings, variant);
+  const normalizedSettings = normalizeWebsiteSettings(settings);
+  const logoSrc = getLogoSrc(normalizedSettings, variant);
 
   if (import.meta.env.DEV) {
-    console.log('Website settings logo:', settings);
-    console.log('Logo seleccionado:', logoSrc);
+    console.log('Website settings logo raw:', settings);
+    console.table(settings);
+    console.log('Website settings normalizado:', normalizedSettings);
+    console.log('Logo seleccionado final:', logoSrc);
   }
 
   if (logoSrc) {
     return (
       <img 
         src={logoSrc} 
-        alt="Noveli Editorial" 
+        alt={normalizedSettings?.brand_name || 'Noveli Editorial'} 
         className="brand-logo-image" 
+        onError={(e) => {
+          console.error('Error cargando logo:', logoSrc);
+          e.currentTarget.style.display = 'none';
+        }}
       />
     );
   }
 
   // Fallback text
-  const brandName = settings?.brand_name || 'NOVELI';
-  const brandSubtitle = settings?.brand_subtitle || ' — EDITORIAL';
+  const brandName = normalizedSettings?.brand_name || 'NOVELI';
+  const brandSubtitle = normalizedSettings?.brand_subtitle || ' — EDITORIAL';
   const isDark = variant === 'dark';
 
   return (

@@ -350,7 +350,7 @@ export default function HomePage({ data, loaded, handleReload }) {
                             alt="Visual Editorial" 
                             loading="eager"
                             decoding="async"
-                            fetchpriority="high"
+                            fetchPriority="high"
                           />
                         </div>
                       );
@@ -368,7 +368,7 @@ export default function HomePage({ data, loaded, handleReload }) {
                             coverUrl={featuredBookCover} 
                             index={0} 
                             loading="eager"
-                            fetchpriority="high"
+                            fetchPriority="high"
                           />
                         </div>
                       );
@@ -390,7 +390,7 @@ export default function HomePage({ data, loaded, handleReload }) {
                             coverUrl="" 
                             index={0} 
                             loading="eager"
-                            fetchpriority="high"
+                            fetchPriority="high"
                           />
                         </div>
                       );

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { HashRouter as Router, Routes, Route, NavLink, Link, useLocation } from 'react-router-dom'
-import { fetchWebsiteData, getCachedWebsiteData, fallbackData, getBookCover, defaultWebsiteSettings, getLogoSrc } from './services/dataService'
+import { fetchWebsiteData, getCachedWebsiteData, fallbackData, getBookCover, defaultWebsiteSettings, getLogoSrc, normalizeWebsiteSettings } from './services/dataService'
 import HomePage from './pages/HomePage'
 
 // Lazy loaded page components
@@ -46,7 +46,7 @@ function AppContent() {
   const location = useLocation();
 
   const { services, books, sections, links, footerSettings, footerGallery, settings } = data || {};
-  const websiteSettings = headerSettings || settings || defaultWebsiteSettings;
+  const websiteSettings = normalizeWebsiteSettings(headerSettings || settings) || defaultWebsiteSettings;
 
   // Shared getLogoSrc utility is imported from dataService.js
   const logoSrc = getLogoSrc(websiteSettings, 'dark');
@@ -69,9 +69,7 @@ function AppContent() {
           console.log('HEADER LOGO URL:', resData?.logo_dark_url || resData?.logo_url || resData?.logo_light_url);
         }
 
-        if (resData) {
-          setHeaderSettings(resData);
-        }
+        setHeaderSettings(resData || null);
       } catch (err) {
         console.error('Error fetching header settings directly:', err);
       }
