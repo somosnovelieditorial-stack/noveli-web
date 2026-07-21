@@ -107,6 +107,26 @@ export default function ContactForm({ email: _email, services = [], initialServi
 
       if (error) throw error;
 
+      try {
+        const { error: notificationError } = await supabase.functions.invoke('notify-new-lead', {
+          body: {
+            name: leadData.name,
+            email: leadData.email,
+            phone: leadData.phone,
+            instagram: leadData.instagram,
+            service_interest: leadData.service_interest,
+            message: leadData.message,
+            manuscript_info: leadData.manuscript_info,
+            created_at: new Date().toISOString()
+          }
+        });
+        if (notificationError) {
+          console.warn('Lead saved, but notification email failed:', notificationError);
+        }
+      } catch (notificationError) {
+        console.warn('Lead saved, but notification email failed:', notificationError);
+      }
+
       setLoading(false);
       setSubmitted(true);
     } catch (err) {
