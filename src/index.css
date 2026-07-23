@@ -1362,15 +1362,24 @@ input:focus, select:focus, textarea:focus {
   color: var(--accent-gold);
 }
 
-.legal-index a {
+.legal-index button {
+  appearance: none;
+  background: transparent;
+  border: 0;
   color: #050505;
   font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1.4;
+  letter-spacing: 0;
+  padding: 0;
+  text-align: left;
+  text-transform: none;
+  cursor: pointer;
 }
 
-.legal-index a:hover,
+.legal-index button:hover,
+.legal-index button:focus-visible,
 .legal-contact a {
   color: var(--accent-gold);
 }
@@ -1381,7 +1390,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .legal-section {
-  scroll-margin-top: 96px;
+  scroll-margin-top: 100px;
 }
 
 .legal-section h2 {

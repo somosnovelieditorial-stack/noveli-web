@@ -199,9 +199,69 @@ const slugify = (value) => value
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/(^-|-$)/g, '');
 
+const legalSectionIds = {
+  terms: [
+    'naturaleza-servicios',
+    'solicitudes-cotizaciones',
+    'alcance-servicios',
+    'obligaciones-cliente',
+    'entrega-materiales',
+    'plazos-estimados',
+    'pagos-condiciones',
+    'cambios-revisiones',
+    'servicios-no-incluidos',
+    'propiedad-intelectual',
+    'publicacion-distribucion',
+    'limitacion-responsabilidad',
+    'comunicaciones',
+    'modificaciones',
+    'legislacion-aplicable'
+  ],
+  privacy: [
+    'datos-recopilados',
+    'finalidades-tratamiento',
+    'uso-resguardo-datos',
+    'no-venta-datos',
+    'terceros-necesarios',
+    'correccion-eliminacion'
+  ],
+  limits: [
+    'resultados-comerciales',
+    'plataformas-externas',
+    'responsabilidad-autor',
+    'servicios-legales-registros',
+    'rechazo-proyectos'
+  ],
+  workflow: [
+    'flujo-trabajo',
+    'informacion-necesaria',
+    'tiempos-respuesta'
+  ],
+  refunds: [
+    'trabajo-no-iniciado',
+    'trabajo-iniciado',
+    'materiales-pendientes',
+    'cambios-fuera-alcance',
+    'cancelaciones',
+    'servicios-terceros'
+  ]
+};
+
+const getSectionId = (type, section, index) => legalSectionIds[type]?.[index] || slugify(section.title);
+
+const scrollToSection = (id) => {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
+};
+
 export default function LegalPage({ type }) {
   const page = legalPages[type] || legalPages.terms;
-  const showIndex = page.sections.length >= 5;
+  const showIndex = page.sections.length > 0;
 
   return (
     <section className="legal-page fade-in">
@@ -218,32 +278,40 @@ export default function LegalPage({ type }) {
           <nav className="legal-index" aria-label="Índice de contenidos">
             <h2>Índice</h2>
             <ol>
-              {page.sections.map((section) => (
-                <li key={section.title}>
-                  <a href={`#${slugify(section.title)}`}>{section.title}</a>
-                </li>
-              ))}
+              {page.sections.map((section, index) => {
+                const sectionId = getSectionId(type, section, index);
+                return (
+                  <li key={sectionId}>
+                    <button type="button" onClick={() => scrollToSection(sectionId)}>
+                      {section.title}
+                    </button>
+                  </li>
+                );
+              })}
             </ol>
           </nav>
         )}
 
         <div className="legal-content">
-          {page.sections.map((section) => (
-            <article key={section.title} id={slugify(section.title)} className="legal-section">
-              <h2>{section.title}</h2>
-              {section.body && <p>{section.body}</p>}
-              {section.list && (
-                <ul>
-                  {section.list.map((item) => <li key={item}>{item}</li>)}
-                </ul>
-              )}
-              {section.ordered && (
-                <ol>
-                  {section.ordered.map((item) => <li key={item}>{item}</li>)}
-                </ol>
-              )}
-            </article>
-          ))}
+          {page.sections.map((section, index) => {
+            const sectionId = getSectionId(type, section, index);
+            return (
+              <article key={sectionId} id={sectionId} className="legal-section">
+                <h2>{section.title}</h2>
+                {section.body && <p>{section.body}</p>}
+                {section.list && (
+                  <ul>
+                    {section.list.map((item) => <li key={item}>{item}</li>)}
+                  </ul>
+                )}
+                {section.ordered && (
+                  <ol>
+                    {section.ordered.map((item) => <li key={item}>{item}</li>)}
+                  </ol>
+                )}
+              </article>
+            );
+          })}
         </div>
 
         <div className="legal-contact">
