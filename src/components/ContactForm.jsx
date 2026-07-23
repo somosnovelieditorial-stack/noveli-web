@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { serviceNeedsManuscriptInfo } from '../services/dataService';
 
@@ -21,7 +22,8 @@ export default function ContactForm({ email: _email, services = [], initialServi
     manuscript_info: '',
     pages: '',
     words: '',
-    manuscript_state: 'borrador'
+    manuscript_state: 'borrador',
+    accepted_terms: false
   });
 
   // Derive selected service requirements
@@ -66,14 +68,22 @@ export default function ContactForm({ email: _email, services = [], initialServi
       return;
     }
 
+    if (!formData.accepted_terms) {
+      setErrorMsg('Debes aceptar los Términos y Condiciones y la Política de Privacidad antes de enviar tu solicitud.');
+      return;
+    }
+
     setLoading(true);
+    const acceptedTermsAt = new Date().toISOString();
 
     const extraDetails = [
       `Servicio Interés: ${formData.service_interest}`,
       selectedServiceObj ? `Servicio ID: ${selectedServiceObj.id}` : null,
       formData.pages ? `Páginas Aprox: ${formData.pages}` : null,
       formData.words ? `Palabras Aprox: ${formData.words}` : null,
-      `Estado Manuscrito: ${formData.manuscript_state}`
+      `Estado Manuscrito: ${formData.manuscript_state}`,
+      'Acepta términos y privacidad: Sí',
+      `Fecha aceptación términos: ${acceptedTermsAt}`
     ].filter(Boolean).join('\n');
 
     const formattedManuscriptInfo = `${extraDetails}\n\nMensaje/Descripción del Autor:\n${formData.manuscript_info.trim()}`;
@@ -88,8 +98,17 @@ export default function ContactForm({ email: _email, services = [], initialServi
       message: null,
       source: 'website',
       status: 'nuevo',
-      organization_id: '11111111-1111-1111-1111-111111111111'
+      organization_id: '11111111-1111-1111-1111-111111111111',
+      accepted_terms: true,
+      accepted_terms_at: acceptedTermsAt
     };
+
+    const leadDataWithoutTermsColumns = {
+      ...leadData,
+      manuscript_info: `${leadData.manuscript_info}\n\nRegistro legal:\naccepted_terms=true\naccepted_terms_at=${acceptedTermsAt}`
+    };
+    delete leadDataWithoutTermsColumns.accepted_terms;
+    delete leadDataWithoutTermsColumns.accepted_terms_at;
 
     if (!supabase) {
       console.warn('Supabase not configured. Using fallback simulated submission.');
@@ -105,7 +124,21 @@ export default function ContactForm({ email: _email, services = [], initialServi
         .from('website_leads')
         .insert([leadData]);
 
-      if (error) throw error;
+      if (error) {
+        const missingTermsColumns = ['accepted_terms', 'accepted_terms_at'].some(column =>
+          String(error.message || '').includes(column) ||
+          String(error.details || '').includes(column) ||
+          String(error.hint || '').includes(column)
+        );
+
+        if (!missingTermsColumns) throw error;
+
+        const { error: fallbackError } = await supabase
+          .from('website_leads')
+          .insert([leadDataWithoutTermsColumns]);
+
+        if (fallbackError) throw fallbackError;
+      }
 
       try {
         const { error: notificationError } = await supabase.functions.invoke('notify-new-lead', {
@@ -159,7 +192,8 @@ export default function ContactForm({ email: _email, services = [], initialServi
               manuscript_info: '',
               pages: '',
               words: '',
-              manuscript_state: 'borrador'
+              manuscript_state: 'borrador',
+              accepted_terms: false
             }); 
             setErrorMsg(null);
           }}
@@ -320,6 +354,23 @@ export default function ContactForm({ email: _email, services = [], initialServi
             onChange={(e) => setFormData({ ...formData, manuscript_info: e.target.value })}
           ></textarea>
         </div>
+
+        <label htmlFor="form-accepted-terms" className="terms-checkbox-row">
+          <input
+            id="form-accepted-terms"
+            type="checkbox"
+            required
+            disabled={loading}
+            checked={formData.accepted_terms}
+            onChange={(e) => setFormData({ ...formData, accepted_terms: e.target.checked })}
+          />
+          <span>
+            He leído y acepto los{' '}
+            <Link to="/terminos-y-condiciones">Términos y Condiciones</Link>
+            {' '}y la{' '}
+            <Link to="/politica-de-privacidad">Política de Privacidad</Link>.
+          </span>
+        </label>
 
         {errorMsg && (
           <div style={{

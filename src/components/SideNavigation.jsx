@@ -78,7 +78,8 @@ export default function SideNavigation({ isOpen, onClose, links = {}, brandSetti
           boxShadow: '10px 0 30px rgba(0,0,0,0.4)',
           animation: 'slideRight 0.3s ease-out',
           position: 'relative',
-          textAlign: 'left'
+          textAlign: 'left',
+          overflowY: 'auto'
         }}
       >
         {/* Close Button */}
@@ -206,6 +207,42 @@ export default function SideNavigation({ isOpen, onClose, links = {}, brandSetti
         </nav>
 
         <div style={{ height: '1px', backgroundColor: 'rgba(199, 148, 58, 0.15)', marginBottom: '32px' }}></div>
+
+        <nav aria-label="Legal" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
+          <span style={{
+            color: 'rgba(255,255,255,0.45)',
+            fontFamily: 'var(--font-sans)',
+            fontSize: '0.62rem',
+            fontWeight: 700,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase'
+          }}>
+            Legal
+          </span>
+          {[
+            ['Términos y Condiciones', '/terminos-y-condiciones'],
+            ['Política de Privacidad', '/politica-de-privacidad'],
+            ['Límites Legales', '/limites-legales'],
+            ['Cómo Trabajamos', '/como-trabajamos'],
+            ['Reembolsos y Cancelaciones', '/politica-de-reembolsos']
+          ].map(([label, to]) => (
+            <NavLink
+              key={to}
+              to={to}
+              style={({ isActive }) => ({
+                color: isActive ? 'var(--accent-gold)' : 'rgba(255,255,255,0.76)',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '0.74rem',
+                fontWeight: 600,
+                textDecoration: 'none',
+                lineHeight: 1.25,
+                width: 'fit-content'
+              })}
+            >
+              {label}
+            </NavLink>
+          ))}
+        </nav>
 
         {/* CTA Request Button */}
         <Link 

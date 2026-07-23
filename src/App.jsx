@@ -9,6 +9,7 @@ const BooksPage = lazy(() => import('./pages/BooksPage'))
 const NosotrosPage = lazy(() => import('./pages/NosotrosPage'))
 const ContactPage = lazy(() => import('./pages/ContactPage'))
 const ServiceDetailPage = lazy(() => import('./pages/ServiceDetailPage'))
+const LegalPage = lazy(() => import('./pages/LegalPage'))
 
 import BookCover from './components/BookCover'
 import EditorialSkeleton from './components/EditorialSkeleton'
@@ -122,6 +123,11 @@ function AppContent() {
             <Route path="/libros" element={<BooksPage books={books} bookCategories={data.bookCategories} booksError={data.booksError} handleReload={handleReload} />} />
             <Route path="/nosotros" element={<NosotrosPage sections={sections} links={links} />} />
             <Route path="/contacto" element={<ContactPage services={services} links={links} />} />
+            <Route path="/terminos-y-condiciones" element={<LegalPage type="terms" />} />
+            <Route path="/politica-de-privacidad" element={<LegalPage type="privacy" />} />
+            <Route path="/limites-legales" element={<LegalPage type="limits" />} />
+            <Route path="/como-trabajamos" element={<LegalPage type="workflow" />} />
+            <Route path="/politica-de-reembolsos" element={<LegalPage type="refunds" />} />
           </Routes>
         </Suspense>
       </main>

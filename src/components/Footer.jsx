@@ -82,6 +82,18 @@ export default function Footer({ brandSettings, fs, services, footerGallery, loa
             </ul>
           </div>
 
+          {/* Legal */}
+          <div className="footer-col">
+            <h4>LEGAL</h4>
+            <ul className="footer-links">
+              <li><Link to="/terminos-y-condiciones">Términos y Condiciones</Link></li>
+              <li><Link to="/politica-de-privacidad">Política de Privacidad</Link></li>
+              <li><Link to="/limites-legales">Límites Legales</Link></li>
+              <li><Link to="/como-trabajamos">Cómo Trabajamos</Link></li>
+              <li><Link to="/politica-de-reembolsos">Reembolsos y Cancelaciones</Link></li>
+            </ul>
+          </div>
+
           {/* Contacto */}
           <div className="footer-col">
             <h4>{(defaultFs.contact_title || 'CONTÁCTANOS').toUpperCase()}</h4>
