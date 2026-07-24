@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { serviceNeedsManuscriptInfo } from '../services/dataService';
+import { formatServicePrice, serviceNeedsManuscriptInfo } from '../services/dataService';
 
 export default function ServiceDetailPage({ services = [] }) {
   const { id } = useParams();
@@ -37,16 +37,7 @@ export default function ServiceDetailPage({ services = [] }) {
   const notIncludedList = formatListText(service.not_included);
   const processStepsList = formatListText(service.process_steps);
 
-  const getPriceVal = (svc) => {
-    if (svc.price_from && Number(svc.price_from) > 0) {
-      const formatted = Number(svc.price_from).toLocaleString('es-CL');
-      const currency = svc.currency || 'CLP';
-      return `Desde $${formatted} ${currency}`;
-    }
-    return 'Cotización personalizada';
-  };
-
-  const priceVal = getPriceVal(service);
+  const priceVal = formatServicePrice(service.price_from, service.currency);
   const requiresManuscriptInfo = serviceNeedsManuscriptInfo(service);
 
   return (
@@ -389,9 +380,10 @@ export default function ServiceDetailPage({ services = [] }) {
           font-family: var(--font-serif-title);
           color: #050505;
           font-weight: 700;
-          line-height: 1.1;
+          line-height: 1.18;
           font-size: 32px;
-          white-space: nowrap;
+          white-space: normal;
+          overflow-wrap: anywhere;
         }
         .price-box-sub {
           font-size: 0.76rem;

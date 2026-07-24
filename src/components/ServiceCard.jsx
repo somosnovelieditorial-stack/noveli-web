@@ -183,10 +183,10 @@ export default function ServiceCard({ service, index, variant = 'large', onReque
             {service.short_description || service.description}
           </p>
 
-          <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               <span style={{ fontSize: '0.55rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>Inversión</span>
-              <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--wine-dark)' }}>
+              <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--wine-dark)', lineHeight: 1.25, overflowWrap: 'anywhere' }}>
                 {formatServicePrice(service.price_from, service.currency)}
               </span>
             </div>
@@ -200,7 +200,8 @@ export default function ServiceCard({ service, index, variant = 'large', onReque
                 color: 'var(--accent-gold)', 
                 textDecoration: 'none',
                 letterSpacing: '0.02em',
-                transition: 'color 0.2s ease'
+                transition: 'color 0.2s ease',
+                flexShrink: 0
               }}
             >
               Ver servicio →

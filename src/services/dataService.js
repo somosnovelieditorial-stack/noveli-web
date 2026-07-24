@@ -721,15 +721,17 @@ export function getBookCover(book) {
   return book.cover_image_url || book.cover_url || null;
 }
 
-export function formatServicePrice(price, currency) {
-  if (price === undefined || price === null || price <= 0) {
-    return "Cotización personalizada";
+export function formatServicePrice(price, currency = 'CLP') {
+  const amount = Number(price || 0);
+
+  if (!amount || amount <= 0) {
+    return 'Cotización personalizada';
   }
-  const formatted = price.toLocaleString('es-CL');
-  if (currency === 'CLP') {
-    return `DESDE $${formatted} CLP`;
-  }
-  return `DESDE $${formatted}`;
+
+  const formatted = new Intl.NumberFormat('es-CL').format(amount);
+  const normalizedCurrency = String(currency || 'CLP').replace(/\s*\+\s*IVA\s*$/i, '').trim() || 'CLP';
+
+  return `DESDE $${formatted} ${normalizedCurrency} + IVA`;
 }
 
 export function getBookSummary(book) {
